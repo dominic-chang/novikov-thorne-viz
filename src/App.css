@@ -5,6 +5,43 @@
   text-align: center;
 }
 
+label {
+  margin: 10% 25%;
+  color: #ffba06;
+  position: relative; 
+  display: flex; 
+  flex-direction: row;
+}
+
+.slider {
+  margin: 1em 30%;
+  display: block;
+  position: relative; 
+  min-width:5em;
+  flex-direction: row;
+}
+
+.overlay {
+position: absolute; 
+width: 50%;
+top: 0; 
+left: 0; 
+right: 0; 
+bottom: 0; 
+display: flex; 
+flex-direction: column; 
+justify-content:center; 
+margin-left: 50%;
+background: linear-gradient(to left, rgba(255,255,255,0.5), rgba(0,0,0,0.0)) 
+}
+
+.uielem {
+  position: relative; 
+  left: 100; 
+  display: flex; 
+  flex-direction: row;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
