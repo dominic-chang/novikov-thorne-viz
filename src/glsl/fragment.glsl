@@ -8,6 +8,7 @@ uniform sampler2D textureft;
 uniform vec2 uResolution;
 uniform float theta;
 uniform float disk_temperature;
+uniform bool enable_grav_lensing;
 varying vec2 vUv;
 precision lowp float;
 
@@ -443,13 +444,21 @@ void main() {
     float phi = M_PI/2.*(1.+sign(costheta)) + M_PI*(1.-sign(y)) + sign(y)*acos(costheta*cosvarphi/sqrt(1.0-pow(sintheta*cosvarphi, 2.0)));
     float phi2 = phi + M_PI;
 
+    if (enable_grav_lensing){
+        rs = rsin(mag, psi);
+        rs1 = rsin(mag, M_PI+ psi);
+        rs2 = rsin(mag, 2.0*M_PI+ psi);
+    } else {
+        rs = rsflat(mag, psi);
+    }
 
-    rs = rsin(mag, psi);
-    rs1 = rsin(mag, M_PI+ psi);
-    rs2 = rsin(mag, 2.0*M_PI+ psi);
 
-
-    float deltapsi = psimax(mag) - M_PI;
+    float deltapsi = 0.0;
+    float shadowsize2 = 4.0;
+    if (enable_grav_lensing){
+        deltapsi = psimax(mag) - M_PI;
+        shadowsize2 = 27.0;
+    }
     vec2 texcrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x));
     float texcrd2rad = length(texcrd);
     float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
@@ -457,7 +466,7 @@ void main() {
     vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5);
     texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
 
-    if (mag*mag > 27.){
+    if (mag*mag > shadowsize2){
         gl_FragColor = texture2D(textureft, texcrd3);
     } else {
         rs = rsin(mag, psi);
@@ -487,10 +496,10 @@ void main() {
         float brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
         vec4 color = plankian(disk_temperature*redshift(rs)*doppler_effect(rs, y));
 
-        gl_FragColor += brightening*color*2.0*scale*texture2D(texture1, uv2)*exp(-pow((rs-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
+        gl_FragColor += brightening*color*3.0*scale*texture2D(texture1, uv2)*exp(-pow((rs-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
 
     }
-    if (rs1 > 6.0){
+    if (rs1 > 6.0 && enable_grav_lensing){
         vec2 uv3 = rs1*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
@@ -507,7 +516,7 @@ void main() {
 
         gl_FragColor += brightening*color*100.0*texture2D(texture1, uv3)*exp(-pow((rs1-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
     }
-    if (rs2 > 6.0){
+    if (rs2 > 6.0 && enable_grav_lensing){
         vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;

@@ -24,6 +24,7 @@ function App() {
   const [canvasWidth, setCanvasWidth] = useState(0.7*window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(0.7*window.innerHeight)
   const temperatureRef = useRef(5772)// Used to terminate animation loop if temperature state has changed
+  const gradLensingRef = useRef(false)
   
   useEffect(() => {
     const handleResize = () => {setCanvasWidth(0.7*window.innerWidth); setCanvasHeight(0.7*window.innerHeight);}
@@ -95,6 +96,7 @@ function App() {
       uResolution: {
           value: new THREE.Vector2(canvasWidth, canvasHeight),
         },
+      enable_grav_lensing: {value: enableGravLensing},
       }
     }
 
@@ -128,10 +130,12 @@ function App() {
     acc_disk.material.uniforms.disk_temperature.value = temperature;
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
+    uniforms.enable_grav_lensing.value = enableGravLensing;
 
     renderer.render(scene, camera)
     stats.end();
-    if(temperatureRef.current === temperature){
+    console.log(enableGravLensing, gradLensingRef.current)
+    if(temperatureRef.current === temperature && gradLensingRef.current === enableGravLensing){
       requestAnimationFrame(animate);
     }
   }
@@ -147,7 +151,7 @@ function App() {
                 <input
                   type="checkbox"
                   value={enableGravLensing}
-                  onChange={(e) => {setGravLensing(!enableGravLensing)}}
+                  onChange={(e) => {setGravLensing(!enableGravLensing); gradLensingRef.current = !gradLensingRef.current}}
                 />
                 Gravitational Lensing 
               </label>
