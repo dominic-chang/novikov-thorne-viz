@@ -378,21 +378,19 @@ vec4 get_disk_color(float rs, float phi, float sigma){
     float y2 =y*y;
     float y3 = y2*y;
     float y4 = y2*y2;
-    float brightening = 1.0;
-    if (enable_relativistic_beaming){
-        brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
-    }
     float emission_profile = exp(-pow((x-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
-    float redshift_fac = 1.0;
-    if (enable_gravitational_redshift){
-        redshift_fac = redshift(x);
+    if (enable_relativistic_beaming){
+        emission_profile *= pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
     }
-    float arg = disk_temperature*redshift_fac;
+    if (enable_gravitational_redshift){
+        emission_profile *= redshift(x);
+    }
+    float arg = disk_temperature;
     if(enable_doppler_effect){
         arg *= doppler_effect(x, y);
     }
     vec4 color = plankian(arg);
-    return brightening*color*3.0*emission_profile;
+    return color*3.0*emission_profile;
 }
 
 void main() {
@@ -473,7 +471,7 @@ void main() {
         vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
-        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs1, phi, sigma);
+        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, phi, sigma);
 
     }
         
