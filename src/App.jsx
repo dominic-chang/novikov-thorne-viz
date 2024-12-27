@@ -25,6 +25,10 @@ function App() {
   const [canvasHeight, setCanvasHeight] = useState(0.7*window.innerHeight)
   const temperatureRef = useRef(5772)// Used to terminate animation loop if temperature state has changed
   const gradLensingRef = useRef(false)
+  const relativisticBeamingRef = useRef(false)
+  const dopplerEffectRef = useRef(false)
+  const gravRedshiftRef = useRef(false)
+
   
   useEffect(() => {
     const handleResize = () => {setCanvasWidth(0.7*window.innerWidth); setCanvasHeight(0.7*window.innerHeight);}
@@ -97,6 +101,9 @@ function App() {
           value: new THREE.Vector2(canvasWidth, canvasHeight),
         },
       enable_grav_lensing: {value: enableGravLensing},
+      enable_relativistic_beaming: {value: enableRelativisticBeaming},
+      enable_doppler_effect: {value: enableDopplerEffect},
+      enable_gravitational_redshift: {value: enableGravitationalRedshift},
       }
     }
 
@@ -131,11 +138,19 @@ function App() {
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
     uniforms.enable_grav_lensing.value = enableGravLensing;
+    uniforms.enable_relativistic_beaming.value = enableRelativisticBeaming;
+    uniforms.enable_doppler_effect.value = enableDopplerEffect;
+    uniforms.enable_gravitational_redshift.value = enableGravitationalRedshift;
 
     renderer.render(scene, camera)
     stats.end();
-    console.log(enableGravLensing, gradLensingRef.current)
-    if(temperatureRef.current === temperature && gradLensingRef.current === enableGravLensing){
+    if(
+      temperatureRef.current === temperature && 
+      gradLensingRef.current === enableGravLensing && 
+      relativisticBeamingRef.current === enableRelativisticBeaming &&
+      dopplerEffectRef.current === enableDopplerEffect &&
+      gravRedshiftRef.current === enableGravitationalRedshift
+    ){
       requestAnimationFrame(animate);
     }
   }
@@ -158,24 +173,24 @@ function App() {
               <label>
                 <input
                   type="checkbox"
-                  value={enableRelativisticBeaming}
-                  onChange={(e) => setRelativisticBeaming(!enableRelativisticBeaming)}
+                  checked={enableRelativisticBeaming}
+                  onChange={(e) => {setRelativisticBeaming(e.target.checked); relativisticBeamingRef.current = e.target.checked;}}
                 />
                 Relativistic Beaming
               </label>
               <label>
                 <input
                   type="checkbox"
-                  value={enableDopplerEffect}
-                  onChange={(e) => setDopplerEffect(!enableDopplerEffect)}
+                  checked={enableDopplerEffect}
+                  onChange={(e) => {setDopplerEffect(e.target.checked); dopplerEffectRef.current = e.target.checked;}}
                 />
                 Doppler Effect
               </label>
               <label>
                 <input
                   type="checkbox"
-                  value={enableGravitationalRedshift}
-                  onChange={(e) => setGravitationalRedshift(!enableGravitationalRedshift)}
+                  checked={enableGravitationalRedshift}
+                  onChange={(e) => {setGravitationalRedshift(e.target.checked); gravRedshiftRef.current = e.target.checked;}}
                 />
                 Gravitational Redshift
               </label>

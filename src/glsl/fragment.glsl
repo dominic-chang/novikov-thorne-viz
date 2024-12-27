@@ -9,9 +9,11 @@ uniform vec2 uResolution;
 uniform float theta;
 uniform float disk_temperature;
 uniform bool enable_grav_lensing;
+uniform bool enable_relativistic_beaming;
+uniform bool enable_doppler_effect;
+uniform bool enable_gravitational_redshift;
 varying vec2 vUv;
 precision lowp float;
-
 
 /* Complex Functions */
 vec2 c_p(vec2 x, vec2 y){
@@ -278,57 +280,6 @@ float psimax(float mag){
     return 4.*mag*F(asin(sqrt(v31[0]/v41[0])), ellk)/sqrt(v31[0]*v42[0]);
 }
 
-float rsout(float mag, float psi){
-//Created by FabriceNeyret2 in 2019-02-14  https://www.shadertoy.com/view/3d23Dc
-    // --- Solving a*x³ +b*x³ +c*x +d = 0. -> l = min(3 solutions)
-    float a = 1., b = 0., c = -mag*mag, d = 2.*mag*mag,
-        Q, A, D, V, l, k = -1.;
-
-    if (abs(a)<1e-3) {                          // degenerated P3
-        k = -2.;
-        V = c*c - 4.*b*d;
-        l = ( -c -sign(b)* sqrt(V) ) / (2.*b);
-    }
-    else {                                      // true P3       
-    b /= a; c /= a; d /= a;
-    float p = ( 3.*c - b*b ) / 3.,
-            q = ( 9.*b*c - 27.*d - 2.*b*b*b) / 27., // -
-            r = q/2.; Q = p/3.;
-            D = Q*Q*Q + r*r;
-    
-    if ( D < 0.) {                            // --- if 3 sol
-        A = acos(r/sqrt(-Q*Q*Q)), 
-        k = round(1.5-A/6.283); // k = 0,1,2 ; we want min l
-#define sol(k) ( 2.*sqrt(-Q)* cos((A+(k)*6.283)/3.) - b/3. )
-        l = sol(k);
-    }
-    else                                        // --- if 1 sol
-        if (p>0.) V = -2.*sqrt(p/3.), 
-#define asinh(z) ( sign(z)*asinh(abs(z)) )      // fix asinh() symetry error 
-                l = -V* sinh(asinh(3.*-q/p/V)/3.) -b/3.; 
-        else      V = -2.*sqrt(-p/3.), 
-                l = sign(-q)*V* cosh(acosh(3.*abs(q)/p/V)/3.) -b/3.;
-    }
-    
-    // --- display
-    float r1 = l;
-    float r3 = sol(k+1.);
-    float r4 = sol(k+2.);
-    r3 = min(r4, r3);
-    r4 = max(r4, r3);
-
-    float r32 = r3;
-    float r41 = r4 - r1;
-    float r31 = r3 - r1;
-    float r42 = r4;
-
-    float ellk = min(r32*r41 / (r31*r42), 1.0);
-    float fo = F(asin(sqrt(r31/r41)),ellk);
-    float san = r41 * pow(sn(fo - 1./2. * sqrt(r31*r42)*psi/(mag), ellk), 2.0);
-    return (r31*r4-r3*san) / (r31 - san) ;
-
-}
-
 /* Disk Spectrum */
 
 float calculateXC(float T) {
@@ -398,7 +349,6 @@ vec3 xyzTorgb(float x, float y, float z) {/*https://en.wikipedia.org/wiki/CIE_19
   return c;
 }
 
-
 vec4 plankian(float T) {
   float x_c = calculateXC(T);
   float y_c = calculateYC(T, x_c);
@@ -419,6 +369,31 @@ float doppler_effect(float rs,float cphi){
     return 1.0/sqrt(1.0 - 2.0/(2.0*rs - 4.0))*(1.0 - sqrt(2.0/(2.0*rs - 4.0))*cphi);
 }
 
+vec4 get_disk_color(float rs, float phi, float sigma){
+    float x = rs;
+    float x2 = x*x;
+    float x3 = x2*x;
+    float x4 = x2*x2;
+    float y = -cos(phi);
+    float y2 =y*y;
+    float y3 = y2*y;
+    float y4 = y2*y2;
+    float brightening = 1.0;
+    if (enable_relativistic_beaming){
+        brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
+    }
+    float emission_profile = exp(-pow((x-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
+    float redshift_fac = 1.0;
+    if (enable_gravitational_redshift){
+        redshift_fac = redshift(x);
+    }
+    float arg = disk_temperature*redshift_fac;
+    if(enable_doppler_effect){
+        arg *= doppler_effect(x, y);
+    }
+    vec4 color = plankian(arg);
+    return brightening*color*3.0*emission_profile;
+}
 
 void main() {
     float scale = 40.0; // size of disk
@@ -432,8 +407,8 @@ void main() {
     float costheta = cos(80.0/180.0*M_PI);
     float sintheta = sin(80.0/180.0*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
-
     float tanvarphi = sinvarphi/abs(cosvarphi);
+
     float psi = acos(-((sintheta*tanvarphi) / 
         (pow(pow(costheta,2.0) + pow(tanvarphi,2.0), .5))));
 
@@ -451,7 +426,6 @@ void main() {
     } else {
         rs = rsflat(mag, psi);
     }
-
 
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
@@ -475,7 +449,6 @@ void main() {
         gl_FragColor = vec4(0., 0., 0., 1.);
     }
 
-
     if(rs < 2.0){
         gl_FragColor = vec4(0., 0., 0., 1.);
         return;
@@ -485,52 +458,23 @@ void main() {
         vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta-rs/10.0;
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
-        float x = rs;
-        float x2 = x*x;
-        float x3 = x2*x;
-        float x4 = x2*x2;
-        float y = -cos(phi);
-        float y2 =y*y;
-        float y3 = y2*y;
-        float y4 = y2*y2;
-        float brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
-        vec4 color = plankian(disk_temperature*redshift(rs)*doppler_effect(rs, y));
-
-        gl_FragColor += brightening*color*3.0*scale*texture2D(texture1, uv2)*exp(-pow((rs-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
+        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, phi, sigma);
 
     }
     if (rs1 > 6.0 && enable_grav_lensing){
         vec2 uv3 = rs1*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
-        float x = rs1;
-        float x2 = x*x;
-        float x3 = x2*x;
-        float x4 = x2*x2;
-        float y = -cos(phi);
-        float y2 =y*y;
-        float y3 = y2*y;
-        float y4 = y2*y2;
-        float brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
-        vec4 color = plankian(disk_temperature*redshift(rs1)*doppler_effect(rs1, y));
 
-        gl_FragColor += brightening*color*100.0*texture2D(texture1, uv3)*exp(-pow((rs1-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
+        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, phi, sigma);
+
     }
     if (rs2 > 6.0 && enable_grav_lensing){
         vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
-        float x = rs2;
-        float x2 = x*x;
-        float x3 = x2*x;
-        float y = -cos(phi);
-        float y2 =y*y;
-        float y3 = y2*y;
-        float y4 = y2*y2;
-        float brightening = pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
-        vec4 color = plankian(disk_temperature*redshift(rs2)*doppler_effect(rs2, y));
+        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs1, phi, sigma);
 
-        gl_FragColor += brightening*color*100.0*texture2D(texture1, uv4)*exp(-pow((rs2-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
     }
         
 }
