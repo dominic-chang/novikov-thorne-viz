@@ -8,6 +8,7 @@ uniform sampler2D textureft;
 uniform vec2 uResolution;
 uniform float theta;
 uniform float disk_temperature;
+uniform float view_angle;
 uniform bool enable_grav_lensing;
 uniform bool enable_relativistic_beaming;
 uniform bool enable_doppler_effect;
@@ -365,8 +366,10 @@ float redshift(float rs){
     return sqrt(1.0 - 2.0/rs);
 }
 
-float doppler_effect(float rs,float cphi){
-    return 1.0/sqrt(1.0 - 2.0/(2.0*rs - 4.0))*(1.0 - sqrt(2.0/(2.0*rs - 4.0))*cphi);
+float doppler_effect(float rs, float cphi){
+    // TODO: Fix this function
+    // Needs to do cosine of fluid momentum and photon momentum in ZAMO frame
+    return 1.0/sqrt(1.0 - 2.0/(2.0*rs - 4.0))*(1.0 - sqrt(2.0/(2.0*rs - 4.0))*cphi*sin(view_angle/180.0*M_PI));
 }
 
 vec4 get_disk_color(float rs, float phi, float sigma){
@@ -399,14 +402,14 @@ vec4 get_disk_color(float rs, float phi, float sigma){
 void main() {
     float scale = 40.0; // size of disk
     float scale2 = 150.;//size of horizon
-    float sigma = 50.0;
+    float sigma = 20.0;
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
     float mag = length(uv);
     float cosvarphi = x/mag;
-    float costheta = cos(80.0/180.0*M_PI);
-    float sintheta = sin(80.0/180.0*M_PI);
+    float costheta = cos(view_angle/180.0*M_PI);
+    float sintheta = sin(view_angle/180.0*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
     float tanvarphi = sinvarphi/abs(cosvarphi);
 
@@ -434,11 +437,11 @@ void main() {
         deltapsi = psimax(mag) - M_PI;
         shadowsize2 = 27.0;
     }
-    vec2 texcrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x));
+    vec2 texcrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x ));
     float texcrd2rad = length(texcrd);
     float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
     //vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
-    vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5);
+    vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5+ atan(view_angle/180.0*M_PI));
     texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
 
     if (mag*mag > shadowsize2){

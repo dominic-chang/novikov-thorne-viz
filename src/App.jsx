@@ -16,6 +16,8 @@ function isUndefined(obj) {
 
 function App() {
   const [temperature, setTemperature] = useState(5772)
+  const [viewAngle, setViewAngle] = useState(85)
+
   const [enableGravLensing, setGravLensing] = useState(false)
   const [enableRelativisticBeaming, setRelativisticBeaming] = useState(false)
   const [enableDopplerEffect, setDopplerEffect] = useState(false)
@@ -24,6 +26,8 @@ function App() {
   const [canvasWidth, setCanvasWidth] = useState(0.7*window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(0.7*window.innerHeight)
   const temperatureRef = useRef(5772)// Used to terminate animation loop if temperature state has changed
+  const viewAngleRef = useRef(85)// Used to terminate animation loop if temperature state has changed
+
   const gradLensingRef = useRef(false)
   const relativisticBeamingRef = useRef(false)
   const dopplerEffectRef = useRef(false)
@@ -95,6 +99,7 @@ function App() {
       uniforms = {
       theta :    {value: 0},
       disk_temperature: {value: temperature},
+      view_angle: {value: viewAngle},
       texture1:  {value:texture1},
       textureft: {value:texture2},
       uResolution: {
@@ -135,6 +140,9 @@ function App() {
     }
     acc_disk.material.uniforms.theta.value = theta;// + 3.14 * (Math.abs(Math.sin(theta)))/2.;
     acc_disk.material.uniforms.disk_temperature.value = temperature;
+    acc_disk.material.uniforms.view_angle.value = viewAngle;
+
+
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
     uniforms.enable_grav_lensing.value = enableGravLensing;
@@ -207,6 +215,19 @@ function App() {
               <label style={{}}>Temperature: {temperature} K</label>
               </div>
             </div>
+            <div className="slider" >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <input
+                  type="range"
+                  min="1"
+                  max="89"
+                  value={viewAngle}
+                  onChange={(e) => {setViewAngle(e.target.value); viewAngleRef.current = e.target.value}} 
+                />
+              <label style={{}}>Viewing Angle: {viewAngle} °</label>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
