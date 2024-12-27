@@ -379,16 +379,19 @@ vec4 get_disk_color(float rs, float phi, float sigma){
     float y3 = y2*y;
     float y4 = y2*y2;
     float emission_profile = exp(-pow((x-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
-    if (enable_relativistic_beaming){
-        emission_profile *= pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
-    }
-    if (enable_gravitational_redshift){
-        emission_profile *= redshift(x);
-    }
     float arg = disk_temperature;
     if(enable_doppler_effect){
         arg *= doppler_effect(x, y);
     }
+    if (enable_relativistic_beaming){
+        emission_profile *= pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
+    }
+
+    if (enable_gravitational_redshift){
+        emission_profile *= pow(redshift(x), 3.0);
+        arg *= redshift(x);
+    }
+
     vec4 color = plankian(arg);
     return color*3.0*emission_profile;
 }
