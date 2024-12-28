@@ -134,7 +134,7 @@ function App() {
   function animate(){
     stats.begin();
     var d = new Date();
-    theta = -d.getTime()/5000 % 2*Math.PI
+    //theta = -d.getTime()/5000 % 2*Math.PI
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
@@ -213,7 +213,7 @@ function App() {
                   value={temperature}
                   onChange={(e) => {setTemperature(e.target.value); temperatureRef.current = e.target.value}} 
                 />
-              <label style={{}}>Temperature: {temperature} K</label>
+              <label style={{}}>Temperature: {temperature}K</label>
               </div>
             </div>
             <div className="slider" >
@@ -221,14 +221,13 @@ function App() {
                 <input
                   type="range"
                   min="0"
-                  max="89"
+                  max="179"
                   value={viewAngle}
                   onChange={(e) => {setViewAngle(e.target.value); viewAngleRef.current = e.target.value}} 
                 />
-              <label style={{}}>Viewing Angle: {viewAngle} °</label>
+              <label style={{}}>Viewing Angle: {viewAngle}°</label>
               </div>
             </div>
-
           </div>
         </div>
       </div>

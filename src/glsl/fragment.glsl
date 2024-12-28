@@ -440,15 +440,28 @@ void main() {
         deltapsi = psimax(mag) - M_PI;
         shadowsize2 = 27.0;
     }
-    vec2 texcrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x ));
-    float texcrd2rad = length(texcrd);
-    float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
-    //vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
-    vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5 + atan(view_angle/180.0*M_PI));
-    texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
+
+    //latitude and longitude of origin
+    vec2 origin = vec2(theta, M_PI*(view_angle/90.0 - 1.0));
+    //vec2 origin = vec2(0.0, -M_PI/2.0);
+    float fov = 0.2;
+
+    vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
+    float screenrad = length(screencrd);
+    float _lensedscreenrad = tan(atan(screenrad)-deltapsi);
+    vec2 lensedscreencrd = _lensedscreenrad*screencrd/(screenrad);
+    float lensedscreenrad = length(lensedscreencrd);
+    float sinlensedscreenrad = sin(lensedscreenrad);
+    float coslensedscreenrad = cos(lensedscreenrad);
+    float lensedx = lensedscreencrd[0];
+    float lensedy = lensedscreencrd[1];
+
+    float lat = asin(coslensedscreenrad* sin(origin[1]) + (lensedy * sinlensedscreenrad * cos(origin[1])) / lensedscreenrad);
+    float lon = origin[0] + atan(lensedx*sinlensedscreenrad, lensedscreenrad*coslensedscreenrad*cos(origin[1]) - lensedy*sinlensedscreenrad*sin(origin[1]));
+    vec2 texcrd = vec2((lon / M_PI + 1.) * 0.5, (lat / (M_PI/2.0) + 1.) * 0.5);
 
     if (mag*mag > shadowsize2){
-        gl_FragColor = texture2D(textureft, texcrd3);
+        gl_FragColor = texture2D(textureft, texcrd);
     } else {
         rs = rsin(mag, psi);
         rs1 = rsin(mag, M_PI + psi);
@@ -475,7 +488,7 @@ void main() {
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs);
 
-        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, sigma);
+        gl_FragColor += 30.0*texture2D(texture1, uv2)*get_disk_color(rs, cphi, sigma);
 
     }
     if (rs1 > 6.0 && enable_grav_lensing){
@@ -492,7 +505,7 @@ void main() {
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs1);
 
-        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, sigma);
+        gl_FragColor += 30.0*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, sigma);
 
     }
     if (rs2 > 6.0 && enable_grav_lensing){
@@ -510,8 +523,9 @@ void main() {
         float cphi = pu_phi/(pmag*rs1);
 
 
-        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, sigma);
+        gl_FragColor += 30.0*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, sigma);
 
     }
+    gl_FragColor = vec4(pow(gl_FragColor.x,1.2), pow(gl_FragColor.y,1.2), pow(gl_FragColor.z,1.2), pow(gl_FragColor.a,1.2));
         
 }
