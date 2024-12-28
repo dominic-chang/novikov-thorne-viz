@@ -23,8 +23,8 @@ function App() {
   const [enableDopplerEffect, setDopplerEffect] = useState(false)
   const [enableGravitationalRedshift, setGravitationalRedshift] = useState(false)
 
-  const [canvasWidth, setCanvasWidth] = useState(0.7*window.innerWidth)
-  const [canvasHeight, setCanvasHeight] = useState(0.7*window.innerHeight)
+  const [canvasWidth, setCanvasWidth] = useState(window.innerWidth)
+  const [canvasHeight, setCanvasHeight] = useState(window.innerHeight)
   const temperatureRef = useRef(temperature)// Used to terminate animation loop if temperature state has changed
   const viewAngleRef = useRef(viewAngle)// Used to terminate animation loop if temperature state has changed
 
@@ -35,7 +35,7 @@ function App() {
 
   
   useEffect(() => {
-    const handleResize = () => {setCanvasWidth(0.7*window.innerWidth); setCanvasHeight(0.7*window.innerHeight);}
+    const handleResize = () => {setCanvasWidth(window.innerWidth); setCanvasHeight(window.innerHeight);}
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   })
@@ -88,7 +88,7 @@ function App() {
 
     if(isUndefined(texture2)){
       console.log("loading texture2")
-      texture2 = new THREE.TextureLoader().load('/images/eso0932a.png')//.load('space.png')
+      texture2 = new THREE.TextureLoader().load('/images/image.png')//.load('space.png')
     }
     if(isUndefined(texture1)){
       console.log("loading texture1")
@@ -134,13 +134,13 @@ function App() {
   function animate(){
     stats.begin();
     var d = new Date();
-    //theta = -d.getTime()/5000 % 2*Math.PI
+    theta = -d.getTime()/2500 % (2*Math.PI)
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
-    acc_disk.material.uniforms.theta.value = theta;// + 3.14 * (Math.abs(Math.sin(theta)))/2.;
+    acc_disk.material.uniforms.theta.value = theta ;// + 3.14 * (Math.abs(Math.sin(theta)))/2.;
     acc_disk.material.uniforms.disk_temperature.value = temperature;
-    acc_disk.material.uniforms.view_angle.value = viewAngle;
+    acc_disk.material.uniforms.view_angle.value = viewAngle == 90.0? 89.999 : viewAngle;
 
 
     uniforms.uResolution.value.x = canvasWidth;
@@ -166,15 +166,15 @@ function App() {
 
   return (
     <>
-      <div>
+      <div >
         <div style={{position: "relative", alignItems: "center", backgroundColor: "black" }}>
-          <canvas id="canvas" style={{ marginLeft: "auto", marginRight: "auto", display: "block", width: canvasWidth, minHeight: "30em", }}></canvas>
+          <canvas id="canvas" style={{ marginLeft: "auto", marginRight: "auto", display: "block", width: canvasWidth, }}></canvas>
           <div className="overlay">
             <div className="checkbox-buttons">
               <label>
                 <input
                   type="checkbox"
-                  value={enableGravLensing}
+                  checked={enableGravLensing}
                   onChange={(e) => {setGravLensing(!enableGravLensing); gradLensingRef.current = !gradLensingRef.current}}
                 />
                 Gravitational Lensing 

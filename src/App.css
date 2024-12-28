@@ -1,12 +1,17 @@
+body {
+  background-color: black;
+}
+
 #root {
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin: 0 0 0 0;
+  padding: 0;
+  text-align: left;
 }
 
 label {
-  margin: 10% 25%;
+  font-size: 0.8rem;
+  margin: 10% 10%;
   color: #ffba06;
   position: relative; 
   display: flex; 
@@ -14,7 +19,7 @@ label {
 }
 
 .slider {
-  margin: 1em 30%;
+  margin: 1em 10%;
   display: block;
   position: relative; 
   min-width:5em;
@@ -23,7 +28,7 @@ label {
 
 .overlay {
 position: absolute; 
-width: 50%;
+width: 10em;
 top: 0; 
 left: 0; 
 right: 0; 
@@ -31,49 +36,6 @@ bottom: 0;
 display: flex; 
 flex-direction: column; 
 justify-content:center; 
-margin-left: 50%;
-background: linear-gradient(to left, rgba(255,255,255,0.5), rgba(0,0,0,0.0)) 
+background: linear-gradient(to right, rgba(255,255,255,0.5), rgba(0,0,0,0.0)) 
 }
 
-.uielem {
-  position: relative; 
-  left: 100; 
-  display: flex; 
-  flex-direction: row;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
