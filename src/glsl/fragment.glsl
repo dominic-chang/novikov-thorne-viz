@@ -402,7 +402,6 @@ float gu_tt(float rs){
 void main() {
     float scale = 40.0; // size of disk
     float scale2 = 100.;//size of horizon
-    float sigma = 20.0;
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
@@ -441,15 +440,16 @@ void main() {
         shadowsize2 = 27.0;
     }
 
+    float radviewangle = M_PI*(view_angle/180.0 - 0.5);
     //latitude and longitude of origin
-    vec2 origin = vec2(theta, M_PI*(view_angle/90.0 - 1.0));
+    vec2 origin = vec2(theta, radviewangle);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
-    float fov = 0.2;
+    float fov = 0.5;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     float screenrad = length(screencrd);
     float _lensedscreenrad = tan(atan(screenrad)-deltapsi);
-    vec2 lensedscreencrd = _lensedscreenrad*screencrd/(screenrad);
+    vec2 lensedscreencrd = _lensedscreenrad*screencrd.xy/(screenrad);
     float lensedscreenrad = length(lensedscreencrd);
     float sinlensedscreenrad = sin(lensedscreenrad);
     float coslensedscreenrad = cos(lensedscreenrad);
@@ -458,6 +458,12 @@ void main() {
 
     float lat = asin(coslensedscreenrad* sin(origin[1]) + (lensedy * sinlensedscreenrad * cos(origin[1])) / lensedscreenrad);
     float lon = origin[0] + atan(lensedx*sinlensedscreenrad, lensedscreenrad*coslensedscreenrad*cos(origin[1]) - lensedy*sinlensedscreenrad*sin(origin[1]));
+    if(lon > M_PI){
+        lon = 2.0*M_PI-lon;
+    }
+    if(lon < -M_PI){
+        lon = 2.0*M_PI+lon;
+    }
     vec2 texcrd = vec2((lon / M_PI + 1.) * 0.5, (lat / (M_PI/2.0) + 1.) * 0.5);
 
     if (mag*mag > shadowsize2){
@@ -475,8 +481,9 @@ void main() {
     }
     
     if (rs > 6.0) {
-        vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(2.0*scale);
-        float theta2 = 2.0*theta-rs/10.0;
+        vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(3.0*scale);
+        // The rs/10.0 is a hack to make the disk look more spirally
+        float theta2 = theta-rs/10.0;
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
 
         float rs2 = rs*rs;
@@ -488,12 +495,13 @@ void main() {
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs);
 
-        gl_FragColor += 30.0*texture2D(texture1, uv2)*get_disk_color(rs, cphi, sigma);
+        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, scale);
 
     }
     if (rs1 > 6.0 && enable_grav_lensing){
-        vec2 uv3 = rs1*vec2(cos(phi),sin(phi))/(2.0*scale);
-        float theta2 = 2.0*theta;
+        // + PI Because each n views the other side of the disk
+        vec2 uv3 = rs1*vec2(cos(phi+M_PI),sin(phi+M_PI))/(3.0*scale);
+        float theta2 = theta-rs1/10.0;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
 
         float rs12 = rs1*rs1;
@@ -505,12 +513,13 @@ void main() {
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs1);
 
-        gl_FragColor += 30.0*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, sigma);
+        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, scale);
 
     }
     if (rs2 > 6.0 && enable_grav_lensing){
-        vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale);
-        float theta2 = 2.0*theta;
+        // + 2PI Because each n views the other side of the disk
+        vec2 uv4 = rs2*vec2(cos(phi+2.0*M_PI),sin(phi+2.0*M_PI))/(3.0*scale);
+        float theta2 = 2.0*theta-rs2/10.0;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
 
         float rs22 = rs2*rs2;
@@ -523,9 +532,9 @@ void main() {
         float cphi = pu_phi/(pmag*rs1);
 
 
-        gl_FragColor += 30.0*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, sigma);
+        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, scale);
 
     }
-    gl_FragColor = vec4(pow(gl_FragColor.x,1.2), pow(gl_FragColor.y,1.2), pow(gl_FragColor.z,1.2), pow(gl_FragColor.a,1.2));
+    gl_FragColor = pow(gl_FragColor.rgba, vec4(1.5));
         
 }

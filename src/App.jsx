@@ -134,7 +134,7 @@ function App() {
   function animate(){
     stats.begin();
     var d = new Date();
-    theta = -d.getTime()/2500 % (2*Math.PI)
+    theta = -d.getTime()/10000 % (2*Math.PI)
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
