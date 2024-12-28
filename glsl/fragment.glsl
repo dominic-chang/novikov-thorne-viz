@@ -483,7 +483,7 @@ void main() {
     if (rs > 6.0) {
         vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(3.0*scale);
         // The rs/10.0 is a hack to make the disk look more spirally
-        float theta2 = theta-rs/10.0;
+        float theta2 = 10.0*(1.0+1.0/(pow(rs,3.0) + 2.0*pow(rs,2.0)))*theta+rs/10.0;
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
 
         float rs2 = rs*rs;
@@ -501,7 +501,7 @@ void main() {
     if (rs1 > 6.0 && enable_grav_lensing){
         // + PI Because each n views the other side of the disk
         vec2 uv3 = rs1*vec2(cos(phi+M_PI),sin(phi+M_PI))/(3.0*scale);
-        float theta2 = theta-rs1/10.0;
+        float theta2 = 10.0*(1.0+1.0/(pow(rs1,3.0) + 2.0*pow(rs1,2.0)))*theta+rs1/10.0;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
 
         float rs12 = rs1*rs1;
@@ -519,7 +519,7 @@ void main() {
     if (rs2 > 6.0 && enable_grav_lensing){
         // + 2PI Because each n views the other side of the disk
         vec2 uv4 = rs2*vec2(cos(phi+2.0*M_PI),sin(phi+2.0*M_PI))/(3.0*scale);
-        float theta2 = 2.0*theta-rs2/10.0;
+        float theta2 = 10.0*(1.0+1.0/(pow(rs2,3.0) + 2.0*pow(rs2,2.0)))*theta+rs2/10.0;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
 
         float rs22 = rs2*rs2;
