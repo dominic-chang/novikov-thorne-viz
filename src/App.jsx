@@ -74,8 +74,8 @@ function App() {
     }
 
     if(isUndefined(vShader) || isUndefined(fShader)){
-      loader.load('../src/glsl/fragment.glsl', function ( data ) {fShader =  data; runMoreIfDone(); },);
-      loader.load('../src/glsl/vertex.glsl', function ( data ) {vShader =  data; runMoreIfDone(); },);
+      loader.load('glsl/fragment.glsl', function ( data ) {fShader =  data; runMoreIfDone(); },);
+      loader.load('glsl/vertex.glsl', function ( data ) {vShader =  data; runMoreIfDone(); },);
     }else {more();}
 
     //return () => {termination.current = true;}
