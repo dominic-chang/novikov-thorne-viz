@@ -88,11 +88,11 @@ function App() {
 
     if(isUndefined(texture2)){
       console.log("loading texture2")
-      texture2 = new THREE.TextureLoader().load('/images/image.png')//.load('space.png')
+      texture2 = new THREE.TextureLoader().load('images/image.png')//.load('space.png')
     }
     if(isUndefined(texture1)){
       console.log("loading texture1")
-      texture1 = new THREE.TextureLoader().load('/images/clouds-gray.jpeg')
+      texture1 = new THREE.TextureLoader().load('images/clouds-gray.jpeg')
     }
 
     if(isUndefined(uniforms)){
