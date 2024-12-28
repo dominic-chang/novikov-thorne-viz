@@ -25,13 +25,13 @@ function App() {
 
   const [canvasWidth, setCanvasWidth] = useState(0.7*window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(0.7*window.innerHeight)
-  const temperatureRef = useRef(5772)// Used to terminate animation loop if temperature state has changed
-  const viewAngleRef = useRef(85)// Used to terminate animation loop if temperature state has changed
+  const temperatureRef = useRef(temperature)// Used to terminate animation loop if temperature state has changed
+  const viewAngleRef = useRef(viewAngle)// Used to terminate animation loop if temperature state has changed
 
-  const gradLensingRef = useRef(false)
-  const relativisticBeamingRef = useRef(false)
-  const dopplerEffectRef = useRef(false)
-  const gravRedshiftRef = useRef(false)
+  const gradLensingRef = useRef(enableGravLensing)
+  const relativisticBeamingRef = useRef(enableRelativisticBeaming)
+  const dopplerEffectRef = useRef(enableDopplerEffect)
+  const gravRedshiftRef = useRef(enableGravitationalRedshift)
 
   
   useEffect(() => {
@@ -134,7 +134,7 @@ function App() {
   function animate(){
     stats.begin();
     var d = new Date();
-    theta = d.getTime()/5000 % 2*Math.PI
+    theta = -d.getTime()/5000 % 2*Math.PI
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
@@ -154,6 +154,7 @@ function App() {
     stats.end();
     if(
       temperatureRef.current === temperature && 
+      viewAngleRef.current === viewAngle &&
       gradLensingRef.current === enableGravLensing && 
       relativisticBeamingRef.current === enableRelativisticBeaming &&
       dopplerEffectRef.current === enableDopplerEffect &&
@@ -219,7 +220,7 @@ function App() {
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <input
                   type="range"
-                  min="1"
+                  min="0"
                   max="89"
                   value={viewAngle}
                   onChange={(e) => {setViewAngle(e.target.value); viewAngleRef.current = e.target.value}} 

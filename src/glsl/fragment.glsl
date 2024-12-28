@@ -367,27 +367,19 @@ float redshift(float rs){
 }
 
 float doppler_effect(float rs, float cphi){
-    // TODO: Fix this function
-    // Needs to do cosine of fluid momentum and photon momentum in ZAMO frame
-    return 1.0/sqrt(1.0 - 2.0/(2.0*rs - 4.0))*(1.0 - sqrt(2.0/(2.0*rs - 4.0))*cphi*sin(view_angle/180.0*M_PI));
+    // ToDo: Check this with ZAMO & Fluid fram transformation
+    return sqrt(1.0 - 1.0/(rs - 2.0))/(1.0 + sqrt(1.0/(rs - 2.0))*cphi);
 }
 
-vec4 get_disk_color(float rs, float phi, float sigma){
+vec4 get_disk_color(float rs, float cphi, float sigma){
     float x = rs;
-    float x2 = x*x;
-    float x3 = x2*x;
-    float x4 = x2*x2;
-    float y = -cos(phi);
-    float y2 =y*y;
-    float y3 = y2*y;
-    float y4 = y2*y2;
     float emission_profile = exp(-pow((x-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
     float arg = disk_temperature;
     if(enable_doppler_effect){
-        arg *= doppler_effect(x, y);
+        arg *= doppler_effect(x, cphi);
     }
     if (enable_relativistic_beaming){
-        emission_profile *= pow((1.0/(1.0-2.0/(2.0*x-4.0)))*(1.0-sqrt(2.0/(2.0*x-4.0))*y),3.0);
+        emission_profile *= pow(((1.0-1.0/(x-2.0)))/(1.0+sqrt(1.0/(x-2.0))*cphi),3.0);
     }
 
     if (enable_gravitational_redshift){
@@ -399,9 +391,17 @@ vec4 get_disk_color(float rs, float phi, float sigma){
     return color*3.0*emission_profile;
 }
 
+float gu_tt(float rs){
+    if (enable_grav_lensing){
+        return 1.0/sqrt(1.0 - 2.0/rs);
+    } else {
+        return 1.0;
+    }
+}
+
 void main() {
     float scale = 40.0; // size of disk
-    float scale2 = 150.;//size of horizon
+    float scale2 = 100.;//size of horizon
     float sigma = 20.0;
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
@@ -412,6 +412,9 @@ void main() {
     float sintheta = sin(view_angle/180.0*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
     float tanvarphi = sinvarphi/abs(cosvarphi);
+
+    float pd_phi = -x*sintheta;
+    float pd_theta = -y;
 
     float psi = acos(-((sintheta*tanvarphi) / 
         (pow(pow(costheta,2.0) + pow(tanvarphi,2.0), .5))));
@@ -441,7 +444,7 @@ void main() {
     float texcrd2rad = length(texcrd);
     float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
     //vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
-    vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5+ atan(view_angle/180.0*M_PI));
+    vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5+theta/(2.*M_PI), 0.5 + atan(view_angle/180.0*M_PI));
     texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
 
     if (mag*mag > shadowsize2){
@@ -462,7 +465,17 @@ void main() {
         vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta-rs/10.0;
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
-        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, phi, sigma);
+
+        float rs2 = rs*rs;
+        float gu_tt1 = gu_tt(rs);
+        // Accretion disk is in the equatorial plane
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs2;
+        float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
+        float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
+        float pu_phi = pd_phi;
+        float cphi = pu_phi/(pmag*rs);
+
+        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, sigma);
 
     }
     if (rs1 > 6.0 && enable_grav_lensing){
@@ -470,14 +483,34 @@ void main() {
         float theta2 = 2.0*theta;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
 
-        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, phi, sigma);
+        float rs12 = rs1*rs1;
+        float gu_tt1 = gu_tt(rs1);
+        // Accretion disk is in the equatorial plane
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs12;
+        float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
+        float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
+        float pu_phi = pd_phi;
+        float cphi = pu_phi/(pmag*rs1);
+
+        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, sigma);
 
     }
     if (rs2 > 6.0 && enable_grav_lensing){
         vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale);
         float theta2 = 2.0*theta;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
-        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, phi, sigma);
+
+        float rs22 = rs2*rs2;
+        float gu_tt1 = gu_tt(rs22);
+        // Accretion disk is in the equatorial plane
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs22;
+        float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
+        float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
+        float pu_phi = pd_phi;
+        float cphi = pu_phi/(pmag*rs1);
+
+
+        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, sigma);
 
     }
         
