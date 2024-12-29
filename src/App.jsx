@@ -221,7 +221,7 @@ function App() {
                 <input
                   type="range"
                   min="0"
-                  max="179"
+                  max="180"
                   value={viewAngle}
                   onChange={(e) => {setViewAngle(e.target.value); viewAngleRef.current = e.target.value}} 
                 />
