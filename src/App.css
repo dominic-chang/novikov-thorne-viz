@@ -11,7 +11,7 @@ body {
 
 label {
   font-size: 0.8rem;
-  margin: 10% 10%;
+  margin: 10% 1%;
   color: #ffba06;
   position: relative; 
   display: flex; 
@@ -19,7 +19,7 @@ label {
 }
 
 .slider {
-  margin: 1em 10%;
+  margin: 0% 1%;
   display: block;
   position: relative; 
   min-width:5em;
