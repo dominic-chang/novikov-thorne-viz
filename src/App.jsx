@@ -22,6 +22,7 @@ function App() {
   const [enableRelativisticBeaming, setRelativisticBeaming] = useState(false)
   const [enableDopplerEffect, setDopplerEffect] = useState(false)
   const [enableGravitationalRedshift, setGravitationalRedshift] = useState(false)
+  const [enableBackground, setBackground] = useState(true)
 
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight)
@@ -32,6 +33,7 @@ function App() {
   const relativisticBeamingRef = useRef(enableRelativisticBeaming)
   const dopplerEffectRef = useRef(enableDopplerEffect)
   const gravRedshiftRef = useRef(enableGravitationalRedshift)
+  const backgroundRef = useRef(enableBackground)
 
   
   useEffect(() => {
@@ -109,6 +111,7 @@ function App() {
       enable_relativistic_beaming: {value: enableRelativisticBeaming},
       enable_doppler_effect: {value: enableDopplerEffect},
       enable_gravitational_redshift: {value: enableGravitationalRedshift},
+      enable_background: {value: enableBackground},
       }
     }
 
@@ -149,6 +152,7 @@ function App() {
     uniforms.enable_relativistic_beaming.value = enableRelativisticBeaming;
     uniforms.enable_doppler_effect.value = enableDopplerEffect;
     uniforms.enable_gravitational_redshift.value = enableGravitationalRedshift;
+    uniforms.enable_background.value = enableBackground;
 
     renderer.render(scene, camera)
     stats.end();
@@ -158,7 +162,8 @@ function App() {
       gradLensingRef.current === enableGravLensing && 
       relativisticBeamingRef.current === enableRelativisticBeaming &&
       dopplerEffectRef.current === enableDopplerEffect &&
-      gravRedshiftRef.current === enableGravitationalRedshift
+      gravRedshiftRef.current === enableGravitationalRedshift &&
+      backgroundRef.current === enableBackground
     ){
       requestAnimationFrame(animate);
     }
@@ -175,7 +180,7 @@ function App() {
                 <input
                   type="checkbox"
                   checked={enableGravLensing}
-                  onChange={(e) => {setGravLensing(!enableGravLensing); gradLensingRef.current = !gradLensingRef.current}}
+                  onChange={(e) => {setGravLensing(e.target.checked); gradLensingRef.current = e.target.checked}}
                 />
                 Gravitational Lensing 
               </label>
@@ -203,6 +208,15 @@ function App() {
                 />
                 Gravitational Redshift
               </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={enableBackground}
+                  onChange={(e) => {setBackground(e.target.checked); backgroundRef.current = e.target.checked;}}
+                />
+                Toggle Background 
+              </label>
+
             </div>
             <div className="slider" >
               <div style={{ display: "flex", flexDirection: "column" }}>

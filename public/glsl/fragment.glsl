@@ -13,6 +13,7 @@ uniform bool enable_grav_lensing;
 uniform bool enable_relativistic_beaming;
 uniform bool enable_doppler_effect;
 uniform bool enable_gravitational_redshift;
+uniform bool enable_background;
 varying vec2 vUv;
 precision lowp float;
 
@@ -467,7 +468,9 @@ void main() {
     vec2 texcrd = vec2((lon / M_PI + 1.) * 0.5, (lat / (M_PI/2.0) + 1.) * 0.5);
 
     if (mag*mag > shadowsize2){
-        gl_FragColor = texture2D(textureft, texcrd);
+        if(enable_background){
+            gl_FragColor = texture2D(textureft, texcrd);
+        }
     } else {
         rs = rsin(mag, psi);
         rs1 = rsin(mag, M_PI + psi);
