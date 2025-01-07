@@ -564,8 +564,10 @@ void main() {
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs1);
 
+        vec4 temp = 1.2*scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, scale);
+        gl_FragColor.xyz *= abs(1.0-length(temp.rgb));
 
-        gl_FragColor += scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, scale);
+        gl_FragColor += temp;
 
     }
     gl_FragColor = pow(gl_FragColor.rgba, vec4(1.5));
