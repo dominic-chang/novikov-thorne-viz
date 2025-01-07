@@ -508,23 +508,25 @@ void main() {
         return;
     }
     
-    if (rs > 6.0) {
-        vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(3.0*scale);
-        // The rs/10.0 is a hack to make the disk look more spirally
-        float theta2 = 10.0*(1.0+1.0/(pow(rs,3.0) + 2.0*pow(rs,2.0)))*theta+rs/10.0;
-        uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
+    
+    if (rs2 > 6.0 && enable_grav_lensing){
+        // + 2PI Because each n views the other side of the disk
+        vec2 uv4 = rs2*vec2(cos(phi+2.0*M_PI),sin(phi+2.0*M_PI))/(3.0*scale);
+        float theta2 = 10.0*(1.0+1.0/(pow(rs2,3.0) + 2.0*pow(rs2,2.0)))*theta+rs2/10.0;
+        uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
 
-        float rs_square = rs*rs;
-        float gu_tt1 = gu_tt(rs);
+        float rs2_square = rs2*rs2;
+        float gu_tt1 = gu_tt(rs2);
         // Accretion disk is in the equatorial plane
-        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs_square;
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs2_square;
         float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
         float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
         float pu_phi = pd_phi;
-        float cphi = pu_phi/(pmag*rs);
+        float cphi = pu_phi/(pmag*rs1);
 
-        vec4 temp = 1.2*scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, scale);
+        vec4 temp = 1.2*scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, scale);
         gl_FragColor.xyz *= abs(1.0-length(temp.rgb));
+
         gl_FragColor += temp;
 
     }
@@ -549,27 +551,27 @@ void main() {
         gl_FragColor += temp;
 
     }
-    if (rs2 > 6.0 && enable_grav_lensing){
-        // + 2PI Because each n views the other side of the disk
-        vec2 uv4 = rs2*vec2(cos(phi+2.0*M_PI),sin(phi+2.0*M_PI))/(3.0*scale);
-        float theta2 = 10.0*(1.0+1.0/(pow(rs2,3.0) + 2.0*pow(rs2,2.0)))*theta+rs2/10.0;
-        uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
+    if (rs > 6.0) {
+        vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(3.0*scale);
+        // The rs/10.0 is a hack to make the disk look more spirally
+        float theta2 = 10.0*(1.0+1.0/(pow(rs,3.0) + 2.0*pow(rs,2.0)))*theta+rs/10.0;
+        uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
 
-        float rs2_square = rs2*rs2;
-        float gu_tt1 = gu_tt(rs2);
+        float rs_square = rs*rs;
+        float gu_tt1 = gu_tt(rs);
         // Accretion disk is in the equatorial plane
-        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs2_square;
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs_square;
         float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
         float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
         float pu_phi = pd_phi;
-        float cphi = pu_phi/(pmag*rs1);
+        float cphi = pu_phi/(pmag*rs);
 
-        vec4 temp = 1.2*scale*texture2D(texture1, uv4)*get_disk_color(rs2, cphi, scale);
+        vec4 temp = 1.2*scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, scale);
         gl_FragColor.xyz *= abs(1.0-length(temp.rgb));
-
         gl_FragColor += temp;
 
     }
+
     gl_FragColor = pow(gl_FragColor.rgba, vec4(1.5));
         
 }
