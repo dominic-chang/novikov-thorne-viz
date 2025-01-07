@@ -15,7 +15,6 @@ uniform bool enable_doppler_effect;
 uniform bool enable_gravitational_redshift;
 uniform bool enable_background;
 varying vec2 vUv;
-precision lowp float;
 
 /* Complex Functions */
 vec2 c_p(vec2 x, vec2 y){
@@ -140,7 +139,7 @@ float am(float u, float m, float tol){
     float c = sqrt(m);
     int n = 0;
     while(abs(c) > tol){
-        if(n>=10){ return 1.0/0.0;}
+        if(n>=10){ return 0.0;}
         float atemp = 0.5*(a+b);
         float btemp = sqrt(a*b); 
         float ctemp = 0.5*(a-b);
@@ -216,7 +215,7 @@ float rsflat(float mag, float psi) {
     return mag*sqrt(1.0+pow(tan(psi-M_PI/2.0),2.0));
 }
 
-float rsin(float mag, float psi){
+float rsschwarz(float mag, float psi){
     vec2 q = vec2(2.*mag*mag, 0.);
     vec2 p = vec2(-mag*mag, 0.);
     vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
@@ -275,8 +274,6 @@ float psimax(float mag){
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
-
-
     
     float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
     return 4.*mag*F(asin(sqrt(v31[0]/v41[0])), ellk)/sqrt(v31[0]*v42[0]);
@@ -427,9 +424,9 @@ void main() {
     float phi2 = phi + M_PI;
 
     if (enable_grav_lensing){
-        rs = rsin(mag, psi);
-        rs1 = rsin(mag, M_PI+ psi);
-        rs2 = rsin(mag, 2.0*M_PI+ psi);
+        rs = rsschwarz(mag, psi);
+        rs1 = rsschwarz(mag, M_PI+ psi);
+        rs2 = rsschwarz(mag, 2.0*M_PI+ psi);
     } else {
         rs = rsflat(mag, psi);
     }
@@ -472,9 +469,9 @@ void main() {
             gl_FragColor = texture2D(textureft, texcrd);
         }
     } else {
-        rs = rsin(mag, psi);
-        rs1 = rsin(mag, M_PI + psi);
-        rs2 = rsin(mag, 2.0*M_PI + psi);
+        rs = rsschwarz(mag, psi);
+        rs1 = rsschwarz(mag, M_PI + psi);
+        rs2 = rsschwarz(mag, 2.0*M_PI + psi);
         gl_FragColor = vec4(0., 0., 0., 1.);
     }
 
