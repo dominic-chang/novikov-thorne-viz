@@ -211,26 +211,60 @@ float cn(float u, float m){
     }
 }
 
-float rsflat(float mag, float psi) {
+float rs_flat(float mag, float psi) {
     return mag*sqrt(1.0+pow(tan(psi-M_PI/2.0),2.0));
 }
 
-float rsschwarz(float mag, float psi){
-    vec2 q = vec2(2.*mag*mag, 0.);
-    vec2 p = vec2(-mag*mag, 0.);
-    vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
-    vec2 C2 = c_m(C1, vec2(-1./2., sqrt(3.)/2.));
-    vec2 C3 = c_m(C1, vec2(-1./2., -sqrt(3.)/2.));
-    vec2 v4 = C1 - c_d(p, 3.*C1);
-    vec2 v1 = C2 - c_d(p, 3.*C2);
-    vec2 v3 = C3 - c_d(p, 3.*C3);
-
+float Fo(float mag, vec2 rad_roots[3]){
+    vec2 v1 = rad_roots[0];
+    vec2 v3 = rad_roots[1];
+    vec2 v4 = rad_roots[2];
     vec2 v32 = v3;
     vec2 v21 = -v1;
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
 
+    float A = pow(c_m(v32, v42)[0], 0.5);
+    float B = pow(c_m(v31, v41)[0], 0.5);
+    
+    float fo = 0.0;
+    if(mag*mag < 27.){
+        float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
+         return F(acos((A-B)/(A+B)), ellk) ;
+    } else {
+        float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
+        return F(asin(sqrt(v31[0]/v41[0])), ellk);
+    }
+}
+
+
+
+void roots_schwarzschild(inout vec2 rad_roots[3], float mag){
+    vec2 q = vec2(2.*mag*mag, 0.);
+    vec2 p = vec2(-mag*mag, 0.);
+    vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
+    vec2 C2 = c_m(C1, vec2(-1./2., sqrt(3.)/2.));
+    vec2 C3 = c_m(C1, vec2(-1./2., -sqrt(3.)/2.));
+    vec2 v1 = C2 - c_d(p, 3.*C2);
+    vec2 v3 = C3 - c_d(p, 3.*C3);
+    vec2 v4 = C1 - c_d(p, 3.*C1);
+    rad_roots[0] = v1;
+    rad_roots[1] = v3;
+    rad_roots[2] = v4;
+    return;
+}
+
+float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
+    vec2 v1 = rad_roots[0];
+    vec2 v3 = rad_roots[1];
+    vec2 v4 = rad_roots[2];
+
+    vec2 v32 = v3;
+    vec2 v21 = -v1;
+    vec2 v41 = v4 - v1;
+    vec2 v31 = v3 - v1;
+    vec2 v42 = v4;
 
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
@@ -239,7 +273,6 @@ float rsschwarz(float mag, float psi){
     float arg = sqrt(A*B)*(psi)/mag;
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
-        float fo =F(acos((A-B)/(A+B)), ellk) ;
         if(arg < fo ){
             float can = cn(fo - arg, ellk);
             float num = -A*v1[0] + (A*v1[0])*can;
@@ -249,7 +282,6 @@ float rsschwarz(float mag, float psi){
     } else {
 
         float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
-        float fo = F(asin(sqrt(v31[0]/v41[0])), ellk);
         if(arg < 4.*fo ){
             float san = v41[0]*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
             float num = v31[0]*v4[0]-v3[0]*san;
@@ -259,15 +291,10 @@ float rsschwarz(float mag, float psi){
     }
 }
 
-float psimax(float mag){
-    vec2 q = vec2(2.*mag*mag, 0.);
-    vec2 p = vec2(-mag*mag, 0.);
-    vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
-    vec2 C2 = c_m(C1, vec2(-1./2., sqrt(3.)/2.));
-    vec2 C3 = c_m(C1, vec2(-1./2., -sqrt(3.)/2.));
-    vec2 v4 = C1 - c_d(p, 3.*C1);
-    vec2 v1 = C2 - c_d(p, 3.*C2);
-    vec2 v3 = C3 - c_d(p, 3.*C3);
+float psi_max(float mag, float fo, vec2 roots[3]){
+    vec2 v1 = roots[0];
+    vec2 v3 = roots[1];
+    vec2 v4 = roots[2];
 
     vec2 v32 = v3;
     vec2 v21 = -v1;
@@ -276,7 +303,7 @@ float psimax(float mag){
     vec2 v42 = v4;
     
     float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
-    return 4.*mag*F(asin(sqrt(v31[0]/v41[0])), ellk)/sqrt(v31[0]*v42[0]);
+    return 4.*mag*fo/sqrt(v31[0]*v42[0]);
 }
 
 /* Disk Spectrum */
@@ -404,14 +431,17 @@ void main() {
     float x = uv.x;
     float y = uv.y;
     float mag = length(uv);
+    vec2 rad_roots[3];
+    roots_schwarzschild(rad_roots, mag);
+    float fo = Fo(mag, rad_roots);
     float cosvarphi = x/mag;
     float costheta = cos(view_angle/180.0*M_PI);
     float sintheta = sin(view_angle/180.0*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
     float tanvarphi = sinvarphi/abs(cosvarphi);
 
-    float pd_phi = -x*sintheta;
-    float pd_theta = -y;
+    float pd_phi = -x*sintheta/1.2;
+    float pd_theta = -y/1.2;// Division by 1.2 is a hack to remove weird precission issue on some machines
 
     float psi = acos(-((sintheta*tanvarphi) / 
         (pow(pow(costheta,2.0) + pow(tanvarphi,2.0), .5))));
@@ -423,24 +453,22 @@ void main() {
     float phi = M_PI/2.*(1.+sign(costheta)) + M_PI*(1.-sign(y)) + sign(y)*acos(costheta*cosvarphi/sqrt(1.0-pow(sintheta*cosvarphi, 2.0)));
     float phi2 = phi + M_PI;
 
-    if (enable_grav_lensing){
-        rs = rsschwarz(mag, psi);
-        rs1 = rsschwarz(mag, M_PI+ psi);
-        rs2 = rsschwarz(mag, 2.0*M_PI+ psi);
-    } else {
-        rs = rsflat(mag, psi);
-    }
-
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
-        deltapsi = psimax(mag) - M_PI;
+        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
+        rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
+        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
         shadowsize2 = 27.0;
+    } else {
+        rs = rs_flat(mag, psi);
     }
 
-    float radviewangle = M_PI*(view_angle/180.0 - 0.5);
+
+    float rad_view_angle = M_PI*(view_angle/180.0 - 0.5);
     //latitude and longitude of origin
-    vec2 origin = vec2(theta, radviewangle);
+    vec2 origin = vec2(theta, rad_view_angle);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
     float fov = 0.3;
 
@@ -469,9 +497,9 @@ void main() {
             gl_FragColor = texture2D(textureft, texcrd);
         }
     } else {
-        rs = rsschwarz(mag, psi);
-        rs1 = rsschwarz(mag, M_PI + psi);
-        rs2 = rsschwarz(mag, 2.0*M_PI + psi);
+        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs1 = rs_schwarzschild(mag, M_PI + psi, fo, rad_roots);
+        rs2 = rs_schwarzschild(mag, 2.0*M_PI + psi, fo, rad_roots);
         gl_FragColor = vec4(0., 0., 0., 1.);
     }
 
@@ -486,16 +514,18 @@ void main() {
         float theta2 = 10.0*(1.0+1.0/(pow(rs,3.0) + 2.0*pow(rs,2.0)))*theta+rs/10.0;
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
 
-        float rs2 = rs*rs;
+        float rs_square = rs*rs;
         float gu_tt1 = gu_tt(rs);
         // Accretion disk is in the equatorial plane
-        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs2;
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs_square;
         float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
         float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs);
 
-        gl_FragColor += scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, scale);
+        vec4 temp = 1.2*scale*texture2D(texture1, uv2)*get_disk_color(rs, cphi, scale);
+        gl_FragColor.xyz *= abs(1.0-length(temp.rgb));
+        gl_FragColor += temp;
 
     }
     if (rs1 > 6.0 && enable_grav_lensing){
@@ -504,16 +534,19 @@ void main() {
         float theta2 = 10.0*(1.0+1.0/(pow(rs1,3.0) + 2.0*pow(rs1,2.0)))*theta+rs1/10.0;
         uv3 = vec2(cos(theta2)*uv3.x + sin(theta2)*uv3.y, cos(theta2)*uv3.y - sin(theta2)*uv3.x)  + vec2(0.5, 0.5) ;
 
-        float rs12 = rs1*rs1;
+        float rs1_square = rs1*rs1;
         float gu_tt1 = gu_tt(rs1);
         // Accretion disk is in the equatorial plane
-        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs12;
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs1_square;
         float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
         float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
         float pu_phi = pd_phi;
         float cphi = pu_phi/(pmag*rs1);
 
-        gl_FragColor += scale*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, scale);
+        vec4 temp = 1.2*scale*texture2D(texture1, uv3)*get_disk_color(rs1, cphi, scale);
+        gl_FragColor.xyz *= abs(1.0-length(temp.rgb));
+
+        gl_FragColor += temp;
 
     }
     if (rs2 > 6.0 && enable_grav_lensing){
@@ -522,10 +555,10 @@ void main() {
         float theta2 = 10.0*(1.0+1.0/(pow(rs2,3.0) + 2.0*pow(rs2,2.0)))*theta+rs2/10.0;
         uv4 = vec2(cos(theta2)*uv4.x + sin(theta2)*uv4.y, cos(theta2)*uv4.y - sin(theta2)*uv4.x)  + vec2(0.5, 0.5) ;
 
-        float rs22 = rs2*rs2;
-        float gu_tt1 = gu_tt(rs22);
+        float rs2_square = rs2*rs2;
+        float gu_tt1 = gu_tt(rs2);
         // Accretion disk is in the equatorial plane
-        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs22;
+        float dpomega = (pd_theta*pd_theta+pd_phi*pd_phi)/rs2_square;
         float pu_rr = sqrt((gu_tt1-dpomega)/(gu_tt1));
         float pmag = sqrt(gu_tt1*pu_rr*pu_rr + dpomega);
         float pu_phi = pd_phi;
