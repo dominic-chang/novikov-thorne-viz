@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import Stats from 'stats-js';
 import './App.css'
 
@@ -73,6 +72,9 @@ function App() {
         if(isdown){
           horRot += (lastX-event.offsetX)/100
           horRot = horRot % (2.0*Math.PI);
+          if (horRot < 0){
+            horRot += 2.0*Math.PI;
+          }
           vertRot += (lastY-event.offsetY)/100
           vertRot = vertRot % (Math.PI);
           lastX = event.offsetX;
