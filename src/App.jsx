@@ -25,8 +25,8 @@ function App() {
   const [temperature, setTemperature] = useState(5772)
 
   const [enableGravLensing, setGravLensing] = useState(false)
-  const [enableRelativisticBeaming, setRelativisticBeaming] = useState(false)
-  const [enableDopplerEffect, setDopplerEffect] = useState(false)
+  const [enableDopplerBeaming, setDopplerBeaming] = useState(false)
+  const [enableDopplerShift, setDopplerShift] = useState(false)
   const [enableGravitationalRedshift, setGravitationalRedshift] = useState(false)
   const [enableBackground, setBackground] = useState(true)
 
@@ -34,8 +34,8 @@ function App() {
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight)
   const temperatureRef = useRef(temperature)// Used to terminate animation loop if temperature state has changed
   const gradLensingRef = useRef(enableGravLensing)
-  const relativisticBeamingRef = useRef(enableRelativisticBeaming)
-  const dopplerEffectRef = useRef(enableDopplerEffect)
+  const dopplerBeamingRef = useRef(enableDopplerBeaming)
+  const dopplerShiftRef = useRef(enableDopplerShift)
   const gravRedshiftRef = useRef(enableGravitationalRedshift)
   const backgroundRef = useRef(enableBackground)
 
@@ -141,8 +141,8 @@ function App() {
           value: new THREE.Vector2(canvasWidth, canvasHeight),
         },
       enable_grav_lensing: {value: enableGravLensing},
-      enable_relativistic_beaming: {value: enableRelativisticBeaming},
-      enable_doppler_effect: {value: enableDopplerEffect},
+      enable_doppler_beaming: {value: enableDopplerBeaming},
+      enable_doppler_shift: {value: enableDopplerShift},
       enable_gravitational_redshift: {value: enableGravitationalRedshift},
       enable_background: {value: enableBackground},
       }
@@ -182,8 +182,8 @@ function App() {
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
     uniforms.enable_grav_lensing.value = enableGravLensing;
-    uniforms.enable_relativistic_beaming.value = enableRelativisticBeaming;
-    uniforms.enable_doppler_effect.value = enableDopplerEffect;
+    uniforms.enable_doppler_beaming.value = enableDopplerBeaming;
+    uniforms.enable_doppler_shift.value = enableDopplerShift;
     uniforms.enable_gravitational_redshift.value = enableGravitationalRedshift;
     uniforms.enable_background.value = enableBackground;
 
@@ -192,8 +192,8 @@ function App() {
     if(
       temperatureRef.current === temperature && 
       gradLensingRef.current === enableGravLensing && 
-      relativisticBeamingRef.current === enableRelativisticBeaming &&
-      dopplerEffectRef.current === enableDopplerEffect &&
+      dopplerBeamingRef.current === enableDopplerBeaming &&
+      dopplerShiftRef.current === enableDopplerShift &&
       gravRedshiftRef.current === enableGravitationalRedshift &&
       backgroundRef.current === enableBackground
     ){
@@ -219,18 +219,18 @@ function App() {
               <label>
                 <input
                   type="checkbox"
-                  checked={enableRelativisticBeaming}
-                  onChange={(e) => {setRelativisticBeaming(e.target.checked); relativisticBeamingRef.current = e.target.checked;}}
+                  checked={enableDopplerBeaming}
+                  onChange={(e) => {setDopplerBeaming(e.target.checked); dopplerBeamingRef.current = e.target.checked;}}
                 />
-                Relativistic Beaming
+                Doppler Beaming
               </label>
               <label>
                 <input
                   type="checkbox"
-                  checked={enableDopplerEffect}
-                  onChange={(e) => {setDopplerEffect(e.target.checked); dopplerEffectRef.current = e.target.checked;}}
+                  checked={enableDopplerShift}
+                  onChange={(e) => {setDopplerShift(e.target.checked); dopplerShiftRef.current = e.target.checked;}}
                 />
-                Doppler Effect
+                Doppler Shift
               </label>
               <label>
                 <input
