@@ -470,7 +470,7 @@ void main() {
 
     float rad_view_angle = vert_rot - 0.499*M_PI;
     //latitude and longitude of origin
-    vec2 origin = vec2(hor_rot, vert_rot);
+    vec2 origin = vec2(-hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
     float fov = 0.3;
 
