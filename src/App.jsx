@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import Stats from 'stats-js';
 import './App.css'
 
-var renderer, uniforms, vShader, fShader, camera, scene, acc_disk, theta, stats, shader_material, geometry, texture1, texture2;
+var renderer, uniforms, vShader, fShader, camera, scene, accDisk, theta, stats, shaderMaterial, geometry, texture1, texture2;
 var loader = new THREE.FileLoader();
+
+var horRot = 0;
+var vertRot = -Math.PI/15.0;
+var isdown = false;
+var lastX = 0;
+var lastY = 0;
 
 stats = new Stats();
 stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -16,7 +23,6 @@ function isUndefined(obj) {
 
 function App() {
   const [temperature, setTemperature] = useState(5772)
-  const [viewAngle, setViewAngle] = useState(85)
 
   const [enableGravLensing, setGravLensing] = useState(false)
   const [enableRelativisticBeaming, setRelativisticBeaming] = useState(false)
@@ -27,8 +33,6 @@ function App() {
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight)
   const temperatureRef = useRef(temperature)// Used to terminate animation loop if temperature state has changed
-  const viewAngleRef = useRef(viewAngle)// Used to terminate animation loop if temperature state has changed
-
   const gradLensingRef = useRef(enableGravLensing)
   const relativisticBeamingRef = useRef(enableRelativisticBeaming)
   const dopplerEffectRef = useRef(enableDopplerEffect)
@@ -49,17 +53,45 @@ function App() {
       canvas: document.getElementById('canvas'),
       antialias: false,
       });
+      renderer.domElement.addEventListener("mousedown", event => {
+        event.preventDefault();
+        isdown = true;
+        lastX = event.offsetX;
+        lastY = event.offsetY;
+      });
+      renderer.domElement.addEventListener("mouseup", event => {
+        event.preventDefault();
+        isdown = false;
+      });
+      renderer.domElement.addEventListener("mouseleave", event => {
+        event.preventDefault();
+        isdown = false;
+      }
+      )
+      renderer.domElement.addEventListener("mousemove", event => {
+        event.preventDefault();
+        if(isdown){
+          horRot += (lastX-event.offsetX)/100
+          horRot = horRot % (2.0*Math.PI);
+          vertRot += (lastY-event.offsetY)/100
+          vertRot = vertRot % (Math.PI);
+          lastX = event.offsetX;
+          lastY = event.offsetY;
+        }
+      });
+
     }
     renderer.setClearColor(0x000000);
     renderer.setSize(canvasWidth, canvasHeight);
 
     if(isUndefined(camera)) {
       camera = new THREE.PerspectiveCamera(
-      10,
+      1,
       canvasWidth / canvasHeight,
       0.1, 
       10
       );
+
     }
 
     if(isUndefined(scene)){
@@ -100,8 +132,9 @@ function App() {
     if(isUndefined(uniforms)){
       uniforms = {
       theta :    {value: 0},
+      hor_rot:   {value: 0},
+      vert_rot:   {value: 0},
       disk_temperature: {value: temperature},
-      view_angle: {value: viewAngle},
       texture1:  {value:texture1},
       textureft: {value:texture2},
       uResolution: {
@@ -115,9 +148,9 @@ function App() {
       }
     }
 
-    if(isUndefined(shader_material)){
-      console.log("creating shader_material")
-      shader_material = new THREE.ShaderMaterial({
+    if(isUndefined(shaderMaterial)){
+      console.log("creating shaderMaterial")
+      shaderMaterial = new THREE.ShaderMaterial({
       uniforms:       uniforms,
       vertexShader:   vShader,
       fragmentShader: fShader,
@@ -125,11 +158,11 @@ function App() {
       });
     }
 
-    if(isUndefined(acc_disk)){
-      acc_disk = new THREE.Mesh(geometry, shader_material);
+    if(isUndefined(accDisk)){
+      accDisk = new THREE.Mesh(geometry, shaderMaterial);
 
-      acc_disk.position.z = -1;
-      scene.add(acc_disk);
+      accDisk.position.z = -1;
+      scene.add(accDisk);
     }
 
     animate();
@@ -141,10 +174,10 @@ function App() {
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
-    acc_disk.material.uniforms.theta.value = theta ;// + 3.14 * (Math.abs(Math.sin(theta)))/2.;
-    acc_disk.material.uniforms.disk_temperature.value = temperature;
-    acc_disk.material.uniforms.view_angle.value = viewAngle == 90.0? 89.999 : viewAngle;
-
+    accDisk.material.uniforms.theta.value = theta;// + 3.14 * (Math.abs(Math.sin(theta)))/2.;
+    accDisk.material.uniforms.hor_rot.value = horRot;
+    accDisk.material.uniforms.vert_rot.value = vertRot;
+    accDisk.material.uniforms.disk_temperature.value = temperature;
 
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
@@ -158,7 +191,6 @@ function App() {
     stats.end();
     if(
       temperatureRef.current === temperature && 
-      viewAngleRef.current === viewAngle &&
       gradLensingRef.current === enableGravLensing && 
       relativisticBeamingRef.current === enableRelativisticBeaming &&
       dopplerEffectRef.current === enableDopplerEffect &&
@@ -228,18 +260,6 @@ function App() {
                   onChange={(e) => {setTemperature(e.target.value); temperatureRef.current = e.target.value}} 
                 />
               <label style={{}}>Temperature: {temperature}K</label>
-              </div>
-            </div>
-            <div className="slider" >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <input
-                  type="range"
-                  min="0"
-                  max="180"
-                  value={viewAngle}
-                  onChange={(e) => {setViewAngle(e.target.value); viewAngleRef.current = e.target.value}} 
-                />
-              <label style={{}}>Viewing Angle: {viewAngle}°</label>
               </div>
             </div>
           </div>

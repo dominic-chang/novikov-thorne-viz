@@ -7,6 +7,8 @@ uniform sampler2D texture1;
 uniform sampler2D textureft;
 uniform vec2 uResolution;
 uniform float theta;
+uniform float hor_rot;
+uniform float vert_rot;
 uniform float disk_temperature;
 uniform float view_angle;
 uniform bool enable_grav_lensing;
@@ -435,8 +437,8 @@ void main() {
     roots_schwarzschild(rad_roots, mag);
     float fo = Fo(mag, rad_roots);
     float cosvarphi = x/mag;
-    float costheta = cos(view_angle/180.0*M_PI);
-    float sintheta = sin(view_angle/180.0*M_PI);
+    float costheta = cos(vert_rot+0.499*M_PI);
+    float sintheta = sin(vert_rot+0.499*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
     float tanvarphi = sinvarphi/abs(cosvarphi);
 
@@ -466,9 +468,9 @@ void main() {
     }
 
 
-    float rad_view_angle = M_PI*(view_angle/180.0 - 0.5);
+    float rad_view_angle = vert_rot - 0.499*M_PI;
     //latitude and longitude of origin
-    vec2 origin = vec2(theta, rad_view_angle);
+    vec2 origin = vec2(hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
     float fov = 0.3;
 
