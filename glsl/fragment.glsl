@@ -7,11 +7,13 @@ uniform sampler2D texture1;
 uniform sampler2D textureft;
 uniform vec2 uResolution;
 uniform float theta;
+uniform float hor_rot;
+uniform float vert_rot;
 uniform float disk_temperature;
 uniform float view_angle;
 uniform bool enable_grav_lensing;
-uniform bool enable_relativistic_beaming;
-uniform bool enable_doppler_effect;
+uniform bool enable_doppler_beaming;
+uniform bool enable_doppler_shift;
 uniform bool enable_gravitational_redshift;
 uniform bool enable_background;
 varying vec2 vUv;
@@ -391,7 +393,7 @@ float redshift(float rs){
     return sqrt(1.0 - 2.0/rs);
 }
 
-float doppler_effect(float rs, float cphi){
+float doppler_shift(float rs, float cphi){
     // ToDo: Check this with ZAMO & Fluid fram transformation
     return sqrt(1.0 - 1.0/(rs - 2.0))/(1.0 + sqrt(1.0/(rs - 2.0))*cphi);
 }
@@ -400,10 +402,10 @@ vec4 get_disk_color(float rs, float cphi, float sigma){
     float x = rs;
     float emission_profile = exp(-pow((x-3.0)/sigma,2.0))/(sigma*pow(2.0*M_PI,0.5));
     float arg = disk_temperature;
-    if(enable_doppler_effect){
-        arg *= doppler_effect(x, cphi);
+    if(enable_doppler_shift){
+        arg *= doppler_shift(x, cphi);
     }
-    if (enable_relativistic_beaming){
+    if (enable_doppler_beaming){
         emission_profile *= pow(((1.0-1.0/(x-2.0)))/(1.0+sqrt(1.0/(x-2.0))*cphi),3.0);
     }
 
@@ -435,8 +437,8 @@ void main() {
     roots_schwarzschild(rad_roots, mag);
     float fo = Fo(mag, rad_roots);
     float cosvarphi = x/mag;
-    float costheta = cos(view_angle/180.0*M_PI);
-    float sintheta = sin(view_angle/180.0*M_PI);
+    float costheta = cos(vert_rot+0.499*M_PI);
+    float sintheta = sin(vert_rot+0.499*M_PI);
     float sinvarphi = sign(costheta)*y/mag;
     float tanvarphi = sinvarphi/abs(cosvarphi);
 
@@ -466,9 +468,9 @@ void main() {
     }
 
 
-    float rad_view_angle = M_PI*(view_angle/180.0 - 0.5);
+    float rad_view_angle = vert_rot - 0.499*M_PI;
     //latitude and longitude of origin
-    vec2 origin = vec2(theta, rad_view_angle);
+    vec2 origin = vec2(hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
     float fov = 0.3;
 
