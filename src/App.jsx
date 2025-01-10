@@ -52,6 +52,37 @@ function App() {
       canvas: document.getElementById('canvas'),
       antialias: false,
       });
+      renderer.domElement.addEventListener("touchstart", event => {
+        event.preventDefault();
+        isdown = true;
+        lastX = event.changedTouches[0].pageX;
+        lastY = event.changedTouches[0].pageY;
+      });
+      renderer.domElement.addEventListener("touchend", event => {
+        event.preventDefault();
+        isdown = false;
+      });
+      renderer.domElement.addEventListener("touchcancel", event => {
+        event.preventDefault();
+        isdown = false;
+      }
+      )
+      renderer.domElement.addEventListener("touchmove", event => {
+        event.preventDefault();
+        if(isdown){
+          horRot += (lastX-event.changedTouches[0].pageX)/100
+          horRot = horRot % (2.0*Math.PI);
+          if (horRot < 0){
+            horRot += 2.0*Math.PI;
+          }
+          vertRot += (lastY-event.changedTouches[0].pageY)/100
+          vertRot = vertRot % (Math.PI);
+          lastX = event.changedTouches[0].pageX;
+          lastY = event.changedTouches[0].pageY;
+        }
+      });
+
+
       renderer.domElement.addEventListener("mousedown", event => {
         event.preventDefault();
         isdown = true;
