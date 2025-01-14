@@ -22,6 +22,7 @@ function isUndefined(obj) {
 
 function App() {
   const [temperature, setTemperature] = useState(5772)
+  const [diskSize, setDiskSize] = useState(40.0)
 
   const [enableGravLensing, setGravLensing] = useState(false)
   const [enableDopplerBeaming, setDopplerBeaming] = useState(false)
@@ -37,6 +38,7 @@ function App() {
   const dopplerShiftRef = useRef(enableDopplerShift)
   const gravRedshiftRef = useRef(enableGravitationalRedshift)
   const backgroundRef = useRef(enableBackground)
+  const diskSizeRef = useRef(diskSize)
 
   
   useEffect(() => {
@@ -168,6 +170,7 @@ function App() {
       hor_rot:   {value: 0},
       vert_rot:   {value: 0},
       disk_temperature: {value: temperature},
+      disk_size: {value: diskSize}, 
       texture1:  {value:texture1},
       textureft: {value:texture2},
       uResolution: {
@@ -211,6 +214,8 @@ function App() {
     accDisk.material.uniforms.hor_rot.value = horRot;
     accDisk.material.uniforms.vert_rot.value = vertRot;
     accDisk.material.uniforms.disk_temperature.value = temperature;
+    accDisk.material.uniforms.disk_size.value = diskSize;
+    
 
     uniforms.uResolution.value.x = canvasWidth;
     uniforms.uResolution.value.y = canvasHeight;
@@ -228,7 +233,8 @@ function App() {
       dopplerBeamingRef.current === enableDopplerBeaming &&
       dopplerShiftRef.current === enableDopplerShift &&
       gravRedshiftRef.current === enableGravitationalRedshift &&
-      backgroundRef.current === enableBackground
+      backgroundRef.current === enableBackground &&
+      diskSizeRef.current === diskSize
     ){
       requestAnimationFrame(animate);
     }
@@ -293,6 +299,18 @@ function App() {
                   onChange={(e) => {setTemperature(e.target.value); temperatureRef.current = e.target.value}} 
                 />
               <label style={{}}>Temperature: {temperature}K</label>
+              </div>
+            </div>
+            <div className="slider" >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={diskSize}
+                  onChange={(e) => {setDiskSize(e.target.value); diskSizeRef.current = e.target.value}} 
+                />
+              <label style={{}}>Disk Size: {diskSize}</label>
               </div>
             </div>
           </div>
