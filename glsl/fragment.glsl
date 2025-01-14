@@ -11,6 +11,7 @@ uniform float hor_rot;
 uniform float vert_rot;
 uniform float disk_temperature;
 uniform float view_angle;
+uniform float disk_size;
 uniform bool enable_grav_lensing;
 uniform bool enable_doppler_beaming;
 uniform bool enable_doppler_shift;
@@ -427,7 +428,7 @@ float gu_tt(float rs){
 }
 
 void main() {
-    float scale = 40.0; // size of disk
+    float scale = disk_size; // size of disk
     float scale2 = 100.;//size of horizon
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
