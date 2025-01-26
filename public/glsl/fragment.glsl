@@ -429,7 +429,7 @@ float gu_tt(float rs){
 
 void main() {
     float scale = disk_size; // size of disk
-    float scale2 = 100.;//size of horizon
+    float scale2 = 175.;//size of horizon
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
@@ -473,7 +473,7 @@ void main() {
     //latitude and longitude of origin
     vec2 origin = vec2(-hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
-    float fov = 0.3;
+    float fov = 0.45;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     float screenrad = length(screencrd);
