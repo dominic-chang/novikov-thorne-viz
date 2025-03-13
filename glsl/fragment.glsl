@@ -429,7 +429,7 @@ float gu_tt(float rs){
 
 void main() {
     float scale = disk_size; // size of disk
-    float scale2 = 175.;//size of horizon
+    float scale2 = 125.;//size of horizon
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
