@@ -29,6 +29,8 @@ function App() {
   const [enableDopplerShift, setDopplerShift] = useState(false)
   const [enableGravitationalRedshift, setGravitationalRedshift] = useState(false)
   const [enableBackground, setBackground] = useState(true)
+  const [enableAutoRotate, setAutoRotate] = useState(true)
+
 
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth)
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight)
@@ -207,6 +209,10 @@ function App() {
     stats.begin();
     var d = new Date();
     theta = -d.getTime()/10000 % (2*Math.PI)
+    if(enableAutoRotate){
+      horRot += 0.001;
+      horRot = horRot % (2.0*Math.PI);
+    }
     if (Math.abs(theta - Math.PI/2.) < 0.005 || Math.abs(theta - 3.*Math.PI/2.) < 0.005){
         theta += 0.01;
     }
@@ -287,7 +293,14 @@ function App() {
                 />
                 Toggle Background 
               </label>
-
+              <label>
+                <input
+                  type="checkbox"
+                  checked={enableAutoRotate}
+                  onChange={(e) => {setAutoRotate(e.target.checked); backgroundRef.current = e.target.checked;}}
+                />
+                Auto Rotate 
+              </label>
             </div>
             <div className="slider" >
               <div style={{ display: "flex", flexDirection: "column" }}>
