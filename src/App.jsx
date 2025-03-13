@@ -40,6 +40,7 @@ function App() {
   const dopplerShiftRef = useRef(enableDopplerShift)
   const gravRedshiftRef = useRef(enableGravitationalRedshift)
   const backgroundRef = useRef(enableBackground)
+  const autoRotateRef = useRef(enableBackground)
   const diskSizeRef = useRef(diskSize)
 
   
@@ -240,7 +241,8 @@ function App() {
       dopplerShiftRef.current === enableDopplerShift &&
       gravRedshiftRef.current === enableGravitationalRedshift &&
       backgroundRef.current === enableBackground &&
-      diskSizeRef.current === diskSize
+      diskSizeRef.current === diskSize &&
+      autoRotateRef.current === enableAutoRotate
     ){
       requestAnimationFrame(animate);
     }
@@ -297,7 +299,7 @@ function App() {
                 <input
                   type="checkbox"
                   checked={enableAutoRotate}
-                  onChange={(e) => {setAutoRotate(e.target.checked); backgroundRef.current = e.target.checked;}}
+                  onChange={(e) => {setAutoRotate(e.target.checked); autoRotateRef.current = e.target.checked;}}
                 />
                 Auto Rotate 
               </label>
