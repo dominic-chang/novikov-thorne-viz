@@ -26,12 +26,12 @@ vec2 c_p(vec2 x, vec2 y){
 }
 
 vec2 c_m(vec2 x, vec2 y){
-    // Complex multiplication
+    // Complex multiplication 
     return vec2(x[0]*y[0] - x[1]*y[1] , x[0]*y[1] + x[1]*y[0]);
 }
 
 vec2 c_d(vec2 x, vec2 y){
-    // Complex difference
+    // Complex difference 
     return c_m(x, vec2(y[0], -y[1]))/(pow(y[0], 2.)+pow(y[1],2.));
 }
 
@@ -103,7 +103,7 @@ float rawF(float sinphi, float m){
     return sinphi*drf;
 }
 
-float K(float m){
+float K(float m){ 
     // Complete Elliptic integral of the first kind
     return DRF(0., 1. - m, 1.);
 }
@@ -144,7 +144,7 @@ float am(float u, float m, float tol){
     while(abs(c) > tol){
         if(n>=10){ return 0.0;}
         float atemp = 0.5*(a+b);
-        float btemp = sqrt(a*b);
+        float btemp = sqrt(a*b); 
         float ctemp = 0.5*(a-b);
         a = atemp;
         b = btemp;
@@ -230,7 +230,7 @@ float Fo(float mag, vec2 rad_roots[3]){
 
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
-
+    
     float fo = 0.0;
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
@@ -271,8 +271,8 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
 
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
-
-
+    
+    
     float arg = sqrt(A*B)*(psi)/mag;
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
@@ -304,7 +304,7 @@ float psi_max(float mag, float fo, vec2 roots[3]){
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
-
+    
     float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
     return 4.*mag*fo/sqrt(v31[0]*v42[0]);
 }
@@ -369,7 +369,7 @@ vec3 xyzTorgb(float x, float y, float z) {/*https://en.wikipedia.org/wiki/CIE_19
 
   for(int i = 0; i < 3; i++ ) {
     float el = c[i];
-    if(el <= 0.0031308) {
+    if(el <= 0.0031308) { 
       c[i] = 12.92*el;
     } else {
       c[i] =  1.055*pow(el,1.0/2.4)-0.55;
@@ -430,7 +430,7 @@ float gu_tt(float rs){
 void main() {
     float scale = disk_size; // size of disk
     float scale2 = 125.;//size of horizon
-    vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x));
+    vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
     float mag = length(uv);
@@ -446,7 +446,7 @@ void main() {
     float pd_phi = -x*sintheta/1.2;
     float pd_theta = -y/1.2;// Division by 1.2 is a hack to remove weird precission issue on some machines
 
-    float psi = acos(-((sintheta*tanvarphi) /
+    float psi = acos(-((sintheta*tanvarphi) / 
         (pow(pow(costheta,2.0) + pow(tanvarphi,2.0), .5))));
 
     float rs = 0.0;
@@ -473,11 +473,11 @@ void main() {
     //latitude and longitude of origin
     vec2 origin = vec2(-hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
-    float fov = 1.0;
+    float fov = 0.45;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     float screenrad = length(screencrd);
-    float _lensedscreenrad = tan(atan(screenrad)-deltapsi);
+    float _lensedscreenrad = screenrad-deltapsi;
     vec2 lensedscreencrd = _lensedscreenrad*screencrd.xy/(screenrad);
     float lensedscreenrad = length(lensedscreencrd);
     float sinlensedscreenrad = sin(lensedscreenrad);
@@ -510,8 +510,8 @@ void main() {
         gl_FragColor = vec4(0., 0., 0., 1.);
         return;
     }
-
-
+    
+    
     if (rs2 > 6.0 && enable_grav_lensing){
         // + 2PI Because each n views the other side of the disk
         vec2 uv4 = rs2*vec2(cos(phi+2.0*M_PI),sin(phi+2.0*M_PI))/(3.0*scale);
@@ -576,5 +576,5 @@ void main() {
     }
 
     gl_FragColor = pow(gl_FragColor.rgba, vec4(1.5));
-
+        
 }
