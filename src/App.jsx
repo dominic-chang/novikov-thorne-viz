@@ -15,6 +15,7 @@ var lastY = 0;
 stats = new Stats();
 stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild( stats.dom );
+var requestID = null;
 
 function isUndefined(obj) {
   return typeof obj === 'undefined';
@@ -44,11 +45,8 @@ function App() {
   const diskSizeRef = useRef(diskSize)
 
   
-  useEffect(() => {
-    const handleResize = () => {setCanvasWidth(window.innerWidth); setCanvasHeight(window.innerHeight);}
+    const handleResize = (e) => {e.preventDefault();setCanvasWidth(window.innerWidth); setCanvasHeight(window.innerHeight);}
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  })
 
   useEffect(() => {
 
@@ -203,7 +201,7 @@ function App() {
       accDisk.position.z = -1;
       scene.add(accDisk);
     }
-
+    cancelAnimationFrame(requestID);
     animate();
   }
   function animate(){
@@ -243,8 +241,9 @@ function App() {
       backgroundRef.current === enableBackground &&
       diskSizeRef.current === diskSize &&
       autoRotateRef.current === enableAutoRotate
+      
     ){
-      requestAnimationFrame(animate);
+      requestID = requestAnimationFrame(animate);
     }
   }
 
