@@ -477,7 +477,7 @@ void main() {
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     float screenrad = length(screencrd);
-    float _lensedscreenrad = tan(atan(screenrad)-deltapsi);
+    float _lensedscreenrad = screenrad-deltapsi;
     vec2 lensedscreencrd = _lensedscreenrad*screencrd.xy/(screenrad);
     float lensedscreenrad = length(lensedscreencrd);
     float sinlensedscreenrad = sin(lensedscreenrad);
