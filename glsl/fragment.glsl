@@ -465,7 +465,7 @@ void main() {
         //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
         //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
         //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
-        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
+        deltapsi = fo;//psi_max(mag, fo, rad_roots) - M_PI;
         //shadowsize2 = 27.0;
     } else {
         rs = rs_flat(mag, psi);
