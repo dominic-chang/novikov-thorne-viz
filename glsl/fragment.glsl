@@ -101,7 +101,7 @@ float DRF(float X, float Y, float Z){
 
 float rawF(float sinphi, float m){
     float sinphi2 = pow(sinphi, 2.0);
-    float drf = 3.0;//DRF(1. - sinphi2, 1. - m*sinphi2, 1.);
+    float drf = DRF(1. - sinphi2, 1. - m*sinphi2, 1.);
     return sinphi*drf;
 }
 
