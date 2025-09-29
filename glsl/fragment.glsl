@@ -1,6 +1,6 @@
 #define M_PI radians(180.)
-#define D1MACH1 1.175494351e-38
-#define D1MACH2 3.402823466e+38
+#define D1MACH1 1.175494e-38
+#define D1MACH2 3.4028237e+38
 #define D1MACH3 1e-7
 
 uniform sampler2D texture1;
@@ -94,7 +94,7 @@ float DRF(float X, float Y, float Z){
     float E2 = XNDEV*YNDEV - ZNDEV*ZNDEV;
     float E3 = XNDEV*YNDEV*ZNDEV;
     float S  = 1.0 + (C1*E2-0.10-C2*E3)*E2 + C3*E3;
-    ans = S/sqrt(MU);
+    ans = S;///sqrt(MU+);
 
     return ans;
 }
