@@ -77,9 +77,9 @@ float DRF(float X, float Y, float Z){
     while(count > 0){
         count--;
         MU = (XN+YN+ZN)/3.0;
-        XNDEV = 2.0 - (MU+XN);///MU;
-        YNDEV = 2.0 - (MU+YN);///MU;
-        ZNDEV = 2.0 - (MU+ZN);///MU;
+        XNDEV = 2.0 - (MU+XN)/MU;
+        YNDEV = 2.0 - (MU+YN)/MU;
+        ZNDEV = 2.0 - (MU+ZN)/MU;
         float EPSLON = max(max(abs(XNDEV),abs(YNDEV)),abs(ZNDEV));
         if(EPSLON < ERRTOL){break;}
         float XNROOT = sqrt(XN);
@@ -94,7 +94,7 @@ float DRF(float X, float Y, float Z){
     float E2 = XNDEV*YNDEV - ZNDEV*ZNDEV;
     float E3 = XNDEV*YNDEV*ZNDEV;
     float S  = 1.0 + (C1*E2-0.10-C2*E3)*E2 + C3*E3;
-    ans = S;///sqrt(MU);
+    ans = S/sqrt(MU);
 
     return ans;
 }
@@ -423,7 +423,7 @@ vec4 get_disk_color(float rs, float cphi, float sigma){
 
 float gu_tt(float rs){
     if (enable_grav_lensing){
-        return 1.0/sqrt(1.0 - 2.0/(rs+0.0001));
+        return 1.0/sqrt(1.0 - 2.0/rs);
     } else {
         return 1.0;
     }
@@ -462,10 +462,10 @@ void main() {
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
         rs = rs_schwarzschild(mag, psi, fo, rad_roots);
-        rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
-        rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
-        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
-        shadowsize2 = 27.0;
+        //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
+        //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
+        //deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
+        //shadowsize2 = 27.0;
     } else {
         rs = rs_flat(mag, psi);
     }
