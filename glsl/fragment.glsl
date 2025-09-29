@@ -273,6 +273,7 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
 
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
+    return psi;
     
     
     float arg = sqrt(A*B)*(psi)/mag;
@@ -461,8 +462,7 @@ void main() {
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
-        rs = rs_flat(mag, psi);
-        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
         //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
         //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
         //deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
