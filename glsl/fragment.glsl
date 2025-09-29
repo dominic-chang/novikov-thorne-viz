@@ -77,9 +77,9 @@ float DRF(float X, float Y, float Z){
     while(count > 0){
         count--;
         MU = (XN+YN+ZN)/3.0;
-        XNDEV = 2.0 - (MU+XN)/MU;
-        YNDEV = 2.0 - (MU+YN)/MU;
-        ZNDEV = 2.0 - (MU+ZN)/MU;
+        XNDEV = 2.0 - (MU+XN);///MU;
+        YNDEV = 2.0 - (MU+YN);///MU;
+        ZNDEV = 2.0 - (MU+ZN);///MU;
         float EPSLON = max(max(abs(XNDEV),abs(YNDEV)),abs(ZNDEV));
         if(EPSLON < ERRTOL){break;}
         float XNROOT = sqrt(XN);
@@ -94,7 +94,7 @@ float DRF(float X, float Y, float Z){
     float E2 = XNDEV*YNDEV - ZNDEV*ZNDEV;
     float E3 = XNDEV*YNDEV*ZNDEV;
     float S  = 1.0 + (C1*E2-0.10-C2*E3)*E2 + C3*E3;
-    ans = S/sqrt(MU);
+    ans = S;///sqrt(MU);
 
     return ans;
 }
