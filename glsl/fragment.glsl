@@ -73,7 +73,7 @@ float DRF(float X, float Y, float Z){
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    int count = 100;
+    int count = 10000;
     while(count > 0){
         count--;
         MU = (XN+YN+ZN)/3.0;
@@ -94,7 +94,7 @@ float DRF(float X, float Y, float Z){
     float E2 = XNDEV*YNDEV - ZNDEV*ZNDEV;
     float E3 = XNDEV*YNDEV*ZNDEV;
     float S  = 1.0 + (C1*E2-0.10-C2*E3)*E2 + C3*E3;
-    ans = S;///sqrt(MU+);
+    ans = S/sqrt(MU);
 
     return ans;
 }
@@ -423,7 +423,7 @@ vec4 get_disk_color(float rs, float cphi, float sigma){
 
 float gu_tt(float rs){
     if (enable_grav_lensing){
-        return 1.0/sqrt(1.0 - 2.0/rs);
+        return 1.0/sqrt(1.0 - 2.0/(rs+0.0001));
     } else {
         return 1.0;
     }
