@@ -291,7 +291,7 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
             float san = v41[0]*500.0;//*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
             float num = v31[0]*v4[0]-v3[0]*san;
             float den = v31[0]-san;
-            return num/den;
+            return num;///den;
         } else {return 0.0;}
     }
 }
