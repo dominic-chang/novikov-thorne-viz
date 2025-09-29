@@ -279,7 +279,7 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
         if(arg < fo ){
-            float can = 1.0;//cn(fo - arg, ellk);
+            float can = cn(fo - arg, ellk);
             float num = -A*v1[0] + (A*v1[0])*can;
             float den = -A + B + (A+B)*can;
             return num/den;
@@ -288,10 +288,10 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
 
         float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
         if(arg < 4.*fo ){
-            float san = v41[0]*500.0;//*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
+            float san = v41[0]*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
             float num = v31[0]*v4[0]-v3[0]*san;
             float den = v31[0]-san;
-            return num/min(den,1e-6);
+            return num/den;
         } else {return 0.0;}
     }
 }
@@ -461,10 +461,11 @@ void main() {
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
-        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        //rs = rs_flat(mag, psi);
+        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
         //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
         //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
-        //deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
+        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
         //shadowsize2 = 27.0;
     } else {
         rs = rs_flat(mag, psi);
@@ -502,10 +503,10 @@ void main() {
             gl_FragColor = texture2D(textureft, texcrd);
         }
     } else {
-        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
-        //rs1 = rs_schwarzschild(mag, M_PI + psi, fo, rad_roots);
-        //rs2 = rs_schwarzschild(mag, 2.0*M_PI + psi, fo, rad_roots);
-        gl_FragColor = vec4(1., 0., 0., 1.);
+        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs1 = rs_schwarzschild(mag, M_PI + psi, fo, rad_roots);
+        rs2 = rs_schwarzschild(mag, 2.0*M_PI + psi, fo, rad_roots);
+        gl_FragColor = vec4(0., 0., 0., 1.);
     }
 
     if(rs < 2.0){
