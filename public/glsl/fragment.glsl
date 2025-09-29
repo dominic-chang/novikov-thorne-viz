@@ -73,7 +73,9 @@ float DRF(float X, float Y, float Z){
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    while(true){
+    int count = 1000;
+    while(count > 0){
+        count--;
         MU = (XN+YN+ZN)/3.0;
         XNDEV = 2.0 - (MU+XN)/MU;
         YNDEV = 2.0 - (MU+YN)/MU;
