@@ -35,15 +35,15 @@ function isUndefined(obj) {
 
 function App() {
   const [temperature, setTemperature] = useState(5772);
-  const [diskSize, setDiskSize] = useState(40.0);
+  const [diskSize, setDiskSize] = useState(0.1);
 
-  const [enableGravLensing, setGravLensing] = useState(false);
+  const [enableGravLensing, setGravLensing] = useState(true);
   const [enableDopplerBeaming, setDopplerBeaming] = useState(false);
   const [enableDopplerShift, setDopplerShift] = useState(false);
   const [enableGravitationalRedshift, setGravitationalRedshift] =
     useState(false);
   const [enableBackground, setBackground] = useState(true);
-  const [enableAutoRotate, setAutoRotate] = useState(true);
+  const [enableAutoRotate, setAutoRotate] = useState(false);
 
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth);
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
@@ -171,9 +171,9 @@ function App() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const constraints = {
           video: {
-            deviceId: { exact: videodevices[0].deviceId },
-            width: 1000,
-            height: 500,
+            deviceId: { exact: videodevices[1].deviceId },
+            width: 2880,
+            height: 1440,
           },
         }; //, facingMode: 'user' } };
 

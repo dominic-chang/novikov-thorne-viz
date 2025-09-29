@@ -429,7 +429,7 @@ float gu_tt(float rs){
 
 void main() {
     float scale = disk_size; // size of disk
-    float scale2 = 125.;//size of horizon
+    float scale2 = 75.;//size of horizon
     vec2 uv = scale2 * ((gl_FragCoord.xy ) / uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x));
     float x = uv.x;
     float y = uv.y;
@@ -457,19 +457,19 @@ void main() {
     float phi2 = phi + M_PI;
 
     float deltapsi = 0.0;
-    float shadowsize2 = 4.0;
+    float shadowsize2 = 3.0;
     if (enable_grav_lensing){
         rs = rs_schwarzschild(mag, psi, fo, rad_roots);
         rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
         rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
-        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
+        deltapsi = 2.0*(psi_max(mag, fo, rad_roots) - M_PI);
         shadowsize2 = 27.0;
     } else {
         rs = rs_flat(mag, psi);
     }
 
 
-    float rad_view_angle = vert_rot - 0.499*M_PI;
+    float rad_view_angle = vert_rot - M_PI/2.0;
     //latitude and longitude of origin
     vec2 origin = vec2(-hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
@@ -477,12 +477,12 @@ void main() {
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     float screenrad = length(screencrd);
-    float _lensedscreenrad = tan(atan(screenrad)-deltapsi);
+    float _lensedscreenrad = (atan(screenrad)-deltapsi);
     vec2 lensedscreencrd = _lensedscreenrad*screencrd.xy/(screenrad);
     float lensedscreenrad = length(lensedscreencrd);
     float sinlensedscreenrad = sin(lensedscreenrad);
     float coslensedscreenrad = cos(lensedscreenrad);
-    float lensedx = lensedscreencrd[0];
+    float lensedx = -lensedscreencrd[0];
     float lensedy = lensedscreencrd[1];
 
     float lat = asin(coslensedscreenrad* sin(origin[1]) + (lensedy * sinlensedscreenrad * cos(origin[1])) / lensedscreenrad);
