@@ -273,14 +273,13 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
 
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
-    return psi;
     
     
     float arg = sqrt(A*B)*(psi)/mag;
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
         if(arg < fo ){
-            float can = cn(fo - arg, ellk);
+            float can = 1.0;//cn(fo - arg, ellk);
             float num = -A*v1[0] + (A*v1[0])*can;
             float den = -A + B + (A+B)*can;
             return num/den;
@@ -289,7 +288,7 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
 
         float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
         if(arg < 4.*fo ){
-            float san = v41[0]*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
+            float san = v41[0]*500.0;//*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
             float num = v31[0]*v4[0]-v3[0]*san;
             float den = v31[0]-san;
             return num/den;
