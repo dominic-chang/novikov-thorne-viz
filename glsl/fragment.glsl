@@ -461,7 +461,8 @@ void main() {
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
-        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs = rs_flat(mag, psi);
+        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
         //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
         //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
         //deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
