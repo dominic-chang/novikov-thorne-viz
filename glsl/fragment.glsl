@@ -291,7 +291,7 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]){
             float san = v41[0]*500.0;//*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
             float num = v31[0]*v4[0]-v3[0]*san;
             float den = v31[0]-san;
-            return num;///den;
+            return num/min(den,1e-6);
         } else {return 0.0;}
     }
 }
@@ -502,10 +502,10 @@ void main() {
             gl_FragColor = texture2D(textureft, texcrd);
         }
     } else {
-        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
-        rs1 = rs_schwarzschild(mag, M_PI + psi, fo, rad_roots);
-        rs2 = rs_schwarzschild(mag, 2.0*M_PI + psi, fo, rad_roots);
-        gl_FragColor = vec4(0., 0., 0., 1.);
+        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        //rs1 = rs_schwarzschild(mag, M_PI + psi, fo, rad_roots);
+        //rs2 = rs_schwarzschild(mag, 2.0*M_PI + psi, fo, rad_roots);
+        gl_FragColor = vec4(1., 0., 0., 1.);
     }
 
     if(rs < 2.0){
