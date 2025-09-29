@@ -1,6 +1,6 @@
 #define M_PI radians(180.)
-#define D1MACH1 1.175494e-38
-#define D1MACH2 3.4028237e+38
+#define D1MACH1 1.175494351e-38
+#define D1MACH2 3.402823466e+38
 #define D1MACH3 1e-7
 
 uniform sampler2D texture1;
@@ -73,7 +73,7 @@ float DRF(float X, float Y, float Z){
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    int count = 10000;
+    int count = 1000;
     while(count > 0){
         count--;
         MU = (XN+YN+ZN)/3.0;
@@ -461,13 +461,11 @@ void main() {
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
     if (enable_grav_lensing){
-        //rs = rs_flat(mag, psi);
-        //rs = rs_schwarzschild(mag, psi, fo, rad_roots);
-        //rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
-        //rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
-        //deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
-        rs = fo;
-        //shadowsize2 = 27.0;
+        rs = rs_schwarzschild(mag, psi, fo, rad_roots);
+        rs1 = rs_schwarzschild(mag, M_PI+ psi, fo, rad_roots);
+        rs2 = rs_schwarzschild(mag, 2.0*M_PI+ psi, fo, rad_roots);
+        deltapsi = psi_max(mag, fo, rad_roots) - M_PI;
+        shadowsize2 = 27.0;
     } else {
         rs = rs_flat(mag, psi);
     }
