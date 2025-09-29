@@ -221,8 +221,6 @@ float rs_flat(float mag, float psi) {
 }
 
 float Fo(float mag, vec2 rad_roots[3]){
-
-    return mag;
     vec2 v1 = rad_roots[0];
     vec2 v3 = rad_roots[1];
     vec2 v4 = rad_roots[2];
@@ -236,6 +234,7 @@ float Fo(float mag, vec2 rad_roots[3]){
     float B = pow(c_m(v31, v41)[0], 0.5);
     
     float fo = 0.0;
+    return v4[0];
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
          return F(acos((A-B)/(A+B)), ellk) ;
