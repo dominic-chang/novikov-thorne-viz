@@ -101,7 +101,7 @@ float DRF(float X, float Y, float Z){
 
 float rawF(float sinphi, float m){
     float sinphi2 = pow(sinphi, 2.0);
-    float drf = DRF(1. - sinphi2, 1. - m*sinphi2, 1.);
+    float drf = 3.0;//DRF(1. - sinphi2, 1. - m*sinphi2, 1.);
     return sinphi*drf;
 }
 
@@ -234,7 +234,6 @@ float Fo(float mag, vec2 rad_roots[3]){
     float B = pow(c_m(v31, v41)[0], 0.5);
     
     float fo = 0.0;
-    return v4[0];
     if(mag*mag < 27.){
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
          return F(acos((A-B)/(A+B)), ellk) ;
