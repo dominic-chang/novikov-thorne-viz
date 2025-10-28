@@ -1,3 +1,5 @@
+precision highp float;
+precision highp int;
 #define M_PI radians(180.)
 #define D1MACH1 1.175494351e-38
 #define D1MACH2 3.402823466e+38
@@ -10,21 +12,14 @@ uniform float theta;
 uniform float hor_rot;
 uniform float vert_rot;
 uniform float disk_temperature;
-uniform float view_angle;
 uniform float disk_size;
 uniform bool enable_grav_lensing;
 uniform bool enable_doppler_beaming;
 uniform bool enable_doppler_shift;
 uniform bool enable_gravitational_redshift;
 uniform bool enable_background;
-varying vec2 vUv;
 
 /* Complex Functions */
-vec2 c_p(vec2 x, vec2 y) {
-    // Complex sum
-    return vec2(x[0] + y[0], x[1] + y[1]);
-}
-
 vec2 c_m(vec2 x, vec2 y) {
     // Complex multiplication 
     return vec2(x[0] * y[0] - x[1] * y[1], x[0] * y[1] + x[1] * y[0]);
@@ -32,7 +27,7 @@ vec2 c_m(vec2 x, vec2 y) {
 
 vec2 c_d(vec2 x, vec2 y) {
     // Complex difference 
-    return c_m(x, vec2(y[0], -y[1])) / (pow(y[0], 2.) + pow(y[1], 2.));
+    return c_m(x, vec2(y[0], -y[1])) / (y[0]*y[0] + y[1]*y[1]);
 }
 
 vec2 c_pow(vec2 x, float y) {
@@ -73,9 +68,8 @@ float DRF(float X, float Y, float Z) {
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    int count = 1000;
-    while(count > 0) {
-        count--;
+    for(int iter = 0; iter < 100; iter++) {
+
         MU = (XN + YN + ZN) / 3.0;
         XNDEV = 2.0 - (MU + XN) / MU;
         YNDEV = 2.0 - (MU + YN) / MU;
@@ -231,7 +225,6 @@ float Fo(float mag, vec2 rad_roots[3]) {
     vec2 v3 = rad_roots[1];
     vec2 v4 = rad_roots[2];
     vec2 v32 = v3;
-    vec2 v21 = -v1;
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
@@ -239,7 +232,6 @@ float Fo(float mag, vec2 rad_roots[3]) {
     float A = pow(c_m(v32, v42)[0], 0.5);
     float B = pow(c_m(v31, v41)[0], 0.5);
 
-    float fo = 0.0;
     if(mag * mag < 27.) {
         float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4. * A * B);
         return F(acos((A - B) / (A + B)), ellk);
@@ -250,14 +242,17 @@ float Fo(float mag, vec2 rad_roots[3]) {
 }
 
 void roots_schwarzschild(inout vec2 rad_roots[3], float mag) {
-    vec2 q = vec2(2. * mag * mag, 0.);
-    vec2 p = vec2(-mag * mag, 0.);
-    vec2 C1 = c_pow(-q / 2. + c_pow(c_pow(q, 2.) / 4. + c_pow(p, 3.) / 27., 1. / 2.), 1. / 3.);
-    vec2 C2 = c_m(C1, vec2(-1. / 2., sqrt(3.) / 2.));
-    vec2 C3 = c_m(C1, vec2(-1. / 2., -sqrt(3.) / 2.));
+    float b2 = mag * mag;
+    vec2 q = vec2(b2 + b2 , 0.);
+    vec2 p = vec2(-b2, 0.);
+    vec2 C = c_pow(vec2(q[0] * q[0], 0.) / 4. + vec2(p[0] * p[0] * p[0], 0.) / 27., 0.5);
+    vec2 C1 = c_pow(-q / 2. + C, 1. / 3.);
+    vec2 C2 = c_m(C1, vec2(-1., sqrt(3.)) / 2.);
+    vec2 C3 = c_m(C1, vec2(-1., -sqrt(3.)) / 2.);
     vec2 v1 = C2 - c_d(p, 3. * C2);
     vec2 v3 = C3 - c_d(p, 3. * C3);
     vec2 v4 = C1 - c_d(p, 3. * C1);
+
     rad_roots[0] = v1;
     rad_roots[1] = v3;
     rad_roots[2] = v4;
@@ -270,7 +265,6 @@ float rs_schwarzschild(float mag, float psi, float fo, vec2 rad_roots[3]) {
     vec2 v4 = rad_roots[2];
 
     vec2 v32 = v3;
-    vec2 v21 = -v1;
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
@@ -309,12 +303,10 @@ float psi_max(float mag, float fo, vec2 roots[3]) {
     vec2 v4 = roots[2];
 
     vec2 v32 = v3;
-    vec2 v21 = -v1;
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
 
-    float ellk = v32[0] * v41[0] / (v31[0] * v42[0]);
     return 4. * mag * fo / sqrt(v31[0] * v42[0]);
 }
 
@@ -453,7 +445,6 @@ void main() {
     float rs2 = 0.0;
 
     float phi = M_PI / 2. * (1. + sign(costheta)) + M_PI * (1. - sign(y)) + sign(y) * acos(costheta * cosvarphi / sqrt(1.0 - pow(sintheta * cosvarphi, 2.0)));
-    float phi2 = phi + M_PI;
 
     float deltapsi = 0.0;
     float shadowsize2 = 4.0;
