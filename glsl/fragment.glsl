@@ -68,7 +68,7 @@ float DRF(float X, float Y, float Z) {
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    for(int iter = 0; iter < 50; iter++) {
+    for(int iter = 0; iter < 200; iter++) {
 
         MU = (XN + YN + ZN) / 3.0;
         XNDEV = 2.0 - (MU + XN) / MU;
@@ -245,7 +245,7 @@ void roots_schwarzschild(inout vec2 rad_roots[3], float mag) {
     float b2 = mag * mag;
     vec2 q = vec2(b2 + b2 , 0.);
     vec2 p = vec2(-b2, 0.);
-    vec2 C = c_pow(vec2(q[0] * q[0], 0.) / 4. + vec2(p[0] * p[0] * p[0], 0.) / 27., 0.5);
+    vec2 C = c_pow(vec2(q[0] * q[0] / 4, 0.). + vec2(p[0] * p[0] * p[0] / 27., 0.), 0.5);
     vec2 C1 = c_pow(-q / 2. + C, 1. / 3.);
     vec2 C2 = c_m(C1, vec2(-1., sqrt(3.)) / 2.);
     vec2 C3 = c_m(C1, vec2(-1., -sqrt(3.)) / 2.);
