@@ -1,3 +1,5 @@
+precision highp float;
+precision highp int;
 #define M_PI radians(180.)
 #define D1MACH1 1.175494351e-38
 #define D1MACH2 3.402823466e+38
@@ -66,8 +68,7 @@ float DRF(float X, float Y, float Z) {
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    //while(true){
-    for (int iter = 0; iter < 100; iter++){
+    for(int iter = 0; iter < 100; iter++) {
 
         MU = (XN + YN + ZN) / 3.0;
         XNDEV = 2.0 - (MU + XN) / MU;
@@ -243,29 +244,17 @@ float Fo(float mag, vec2 rad_roots[3]) {
 void roots_schwarzschild(inout vec2 rad_roots[3], float mag) {
     vec2 q = vec2(2. * mag * mag, 0.);
     vec2 p = vec2(-mag * mag, 0.);
-    vec2 C = c_pow(vec2(q[0]*q[0], 0.) / 4. + vec2(p[0]*p[0]*p[0], 0.) / 27., 0.5);
+    vec2 C = c_pow(vec2(q[0] * q[0], 0.) / 4. + vec2(p[0] * p[0] * p[0], 0.) / 27., 0.5);
     vec2 C1 = c_pow(-q / 2. + C, 1. / 3.);
-    vec2 C2 = c_m(C1, vec2(-1. , sqrt(3.))/ 2.);
-    vec2 C3 = c_m(C1, vec2(-1. , -sqrt(3.))/ 2.);
+    vec2 C2 = c_m(C1, vec2(-1., sqrt(3.)) / 2.);
+    vec2 C3 = c_m(C1, vec2(-1., -sqrt(3.)) / 2.);
     vec2 v1 = C2 - c_d(p, 3. * C2);
     vec2 v3 = C3 - c_d(p, 3. * C3);
     vec2 v4 = C1 - c_d(p, 3. * C1);
-    //float desc = 4.*pow(p[0],3.0) + 27.0*pow(q[0],2.0);
-    //if(desc < 0.0){
-    //    vec2 u1 = c_pow(-q / 2. + c_pow(c_pow(q, 2.) / 4. + c_pow(p, 3.) / 27., 0.5), 1. / 3.);
-    //    vec2 u2 = c_pow(-q / 2. - c_pow(c_pow(q, 2.) / 4. + c_pow(p, 3.) / 27., 0.5), 1. / 3.);
 
-    //    vec2 e1 = vec2(-(1.), sqrt(3.));
-    //    vec2 e2 = vec2(-(1.), -sqrt(3.));
-    //    vec2 v1 = c_m(e1,u1)/2. + c_m(e2,u2)/2.;
-    //    vec2 v3 = c_m(e2,u1)/2. + c_m(e1,u2)/2.;
-    //    vec2 v4 = u1 + u2;
-
-
-        rad_roots[0] = v1;
-        rad_roots[1] = v3;
-        rad_roots[2] = v4;
-    //}
+    rad_roots[0] = v1;
+    rad_roots[1] = v3;
+    rad_roots[2] = v4;
     return;
 }
 
