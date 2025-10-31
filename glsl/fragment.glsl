@@ -67,7 +67,7 @@ float DRF(float X, float Y, float Z) {
     float ZNDEV = 0.;
 
     //while(true){
-    for (int iter = 0; iter < 10; iter++){
+    for (int iter = 0; iter < 100; iter++){
 
         MU = (XN + YN + ZN) / 3.0;
         XNDEV = 2.0 - (MU + XN) / MU;
