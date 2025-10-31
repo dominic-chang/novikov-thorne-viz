@@ -244,8 +244,8 @@ void roots_schwarzschild(inout vec2 rad_roots[3], float mag) {
     vec2 q = vec2(2. * mag * mag, 0.);
     vec2 p = vec2(-mag * mag, 0.);
     vec2 C1 = c_pow(-q / 2. + c_pow(c_pow(q, 2.) / 4. + c_pow(p, 3.) / 27., 0.5), 1. / 3.);
-    vec2 C2 = c_m(C1, vec2(-(1. / 2.), 0.) + c_pow(vec2(-3., 0.), 1. / 2.) / 2.);
-    vec2 C3 = c_m(C1, vec2(-(1. / 2.), 0.) - c_pow(vec2(-3., 0.), 1. / 2.) / 2.);
+    vec2 C2 = c_m(C1, vec2(-(1. / 2.), sqrt(3))/ 2.);
+    vec2 C3 = c_m(C1, vec2(-(1. / 2.), -sqrt(3))/ 2.);
     vec2 v1 = C3 - c_d(p, 3. * C3);
     vec2 v3 = C2 - c_d(p, 3. * C2);
     vec2 v4 = C1 - c_d(p, 3. * C1);
