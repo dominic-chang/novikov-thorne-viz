@@ -4,7 +4,7 @@ precision highp int;
 #define D1MACH1 1.175494351e-38
 #define D1MACH2 3.402823466e+38
 #define D1MACH3 1e-7
-#define SPEED 2e3
+#define SPEED 1e3
 
 uniform sampler2D texture1;
 uniform sampler2D textureft;
