@@ -11,6 +11,7 @@ var vertRot = -Math.PI/15.0;
 var isdown = false;
 var lastX = 0;
 var lastY = 0;
+var thetao = new Date().getTime()/1e4;
 
 stats = new Stats();
 stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -207,7 +208,7 @@ function App() {
   function animate(){
     stats.begin();
     var d = new Date();
-    theta = -d.getTime()/10000 % (2*Math.PI)
+    theta = thetao - d.getTime()/1e4
     if(enableAutoRotate){
       horRot += 0.001;
       horRot = horRot % (2.0*Math.PI);
