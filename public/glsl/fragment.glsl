@@ -476,6 +476,7 @@ void main() {
     float fov = 1.0;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
+    screencrd.x = -screencrd.x;
     float screenrad = length(screencrd);
     float _lensedscreenrad = (atan(screenrad)-deltapsi);
     vec2 lensedscreencrd = _lensedscreenrad*screencrd.xy/(screenrad);
@@ -557,7 +558,8 @@ void main() {
     if (rs > 6.0) {
         vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(3.0*scale);
         // The rs/10.0 is a hack to make the disk look more spirally
-        float theta2 = 10.0*(1.0+1.0/(pow(rs,3.0) + 2.0*pow(rs,2.0)))*theta+rs/10.0;
+        float rs2=rs*rs;
+        float theta2 = (1.0+5e2*(rs-2.0)/(rs2*rs2))*theta;//+1.0/(rs2);
         uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
 
         float rs_square = rs*rs;
