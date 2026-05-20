@@ -18,6 +18,8 @@ var renderer,
   texture1,
   texture2;
 var loader = new THREE.FileLoader();
+var cameraStream;
+var isCameraStarting = false;
 
 var horRot = 0;
 var vertRot = -Math.PI / 15.0;
@@ -34,11 +36,37 @@ function isUndefined(obj) {
   return typeof obj === "undefined";
 }
 
+function stopStream(stream) {
+  stream.getTracks().forEach((track) => track.stop());
+}
+
+function waitForVideoMetadata(videoElement) {
+  if (videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    videoElement.addEventListener("loadedmetadata", resolve, { once: true });
+  });
+}
+
+async function playVideo(videoElement) {
+  await waitForVideoMetadata(videoElement);
+
+  try {
+    await videoElement.play();
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      console.error("Unable to play the camera video.", error);
+    }
+  }
+}
+
 function App() {
   const [temperature, setTemperature] = useState(5772);
-  const [diskSize, setDiskSize] = useState(0.1);
+  const [diskSize, setDiskSize] = useState(40.0);
 
-  const [enableGravLensing, setGravLensing] = useState(true);
+  const [enableGravLensing, setGravLensing] = useState(false);
   const [enableDopplerBeaming, setDopplerBeaming] = useState(false);
   const [enableDopplerShift, setDopplerShift] = useState(false);
   const [enableGravitationalRedshift, setGravitationalRedshift] =
@@ -156,45 +184,63 @@ function App() {
 
     video = document.getElementById("video");
     async function getCameraDevices() {
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-        console.log(stream);
-      });
-
-      let devices = await navigator.mediaDevices.enumerateDevices();
-      let videodevices = [];
-      for (let device of devices) {
-        if (device.kind === "videoinput") {
-          videodevices.push(device);
-        }
-      }
-      //return videodevices;
-      console.log(videodevices);
-
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const constraints = {
-          video: {
-            deviceId: { exact: videodevices[1].deviceId },
-            width: 2880,
-            height: 1440,
-          },
-        }; //, facingMode: 'user' } };
+        if (cameraStream || isCameraStarting) {
+          return;
+        }
 
-        navigator.mediaDevices
-          .getUserMedia(constraints)
-          .then(function (stream) {
-            // apply the stream to the video element used in the texture
+        isCameraStarting = true;
 
-            video.srcObject = stream;
-            video.play();
-          })
-          .catch(function (error) {
-            console.error("Unable to access the camera/webcam.", error);
+        try {
+          const permissionStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
           });
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoDevices = devices.filter(
+            (device) => device.kind === "videoinput"
+          );
+          const preferredDevice = videoDevices[1] || videoDevices[0];
+
+          console.log(videoDevices);
+
+          let stream = permissionStream;
+          const activeDeviceId = permissionStream
+            .getVideoTracks()[0]
+            ?.getSettings().deviceId;
+
+          if (
+            preferredDevice?.deviceId &&
+            activeDeviceId !== preferredDevice.deviceId
+          ) {
+            const constraints = {
+              video: {
+                deviceId: { exact: preferredDevice.deviceId },
+                width: 2880,
+                height: 1440,
+              },
+            }; //, facingMode: 'user' } };
+
+            stopStream(permissionStream);
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+          }
+
+          // Apply the stream once; changing srcObject interrupts pending play() calls.
+          if (video.srcObject !== stream) {
+            video.srcObject = stream;
+          }
+
+          cameraStream = stream;
+          await playVideo(video);
+        } catch (error) {
+          console.error("Unable to access the camera/webcam.", error);
+        } finally {
+          isCameraStarting = false;
+        }
       } else {
         console.error("MediaDevices interface not available.");
       }
     }
-    const videodevices = getCameraDevices();
+    getCameraDevices();
     // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     //   const constraints = {
     //     video: {
@@ -233,6 +279,7 @@ function App() {
       more();
     }
 
+    console.log("App mounted");
     //return () => {termination.current = true;}
   });
 

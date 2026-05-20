@@ -1,7 +1,10 @@
+precision highp float;
+precision highp int;
 #define M_PI radians(180.)
 #define D1MACH1 1.175494351e-38
 #define D1MACH2 3.402823466e+38
 #define D1MACH3 1e-7
+#define SPEED 1e3
 
 uniform sampler2D texture1;
 uniform sampler2D textureft;
@@ -25,7 +28,7 @@ vec2 c_m(vec2 x, vec2 y) {
 
 vec2 c_d(vec2 x, vec2 y) {
     // Complex difference 
-    return c_m(x, vec2(y[0], -y[1])) / (pow(y[0], 2.) + pow(y[1], 2.));
+    return c_m(x, vec2(y[0], -y[1])) / (y[0] * y[0] + y[1] * y[1]);
 }
 
 vec2 c_pow(vec2 x, float y) {
@@ -66,7 +69,8 @@ float DRF(float X, float Y, float Z) {
     float YNDEV = 0.;
     float ZNDEV = 0.;
 
-    while(true){
+    for(int iter = 0; iter < 100; iter++) {
+
         MU = (XN + YN + ZN) / 3.0;
         XNDEV = 2.0 - (MU + XN) / MU;
         YNDEV = 2.0 - (MU + YN) / MU;
@@ -239,14 +243,17 @@ float Fo(float mag, vec2 rad_roots[3]) {
 }
 
 void roots_schwarzschild(inout vec2 rad_roots[3], float mag) {
-    vec2 q = vec2(2. * mag * mag, 0.);
-    vec2 p = vec2(-mag * mag, 0.);
-    vec2 C1 = c_pow(-q / 2. + c_pow(c_pow(q, 2.) / 4. + c_pow(p, 3.) / 27., 0.5), 1. / 3.);
-    vec2 C2 = c_m(C1, vec2(-(1. / 2.), 0.) + c_pow(vec2(-3., 0.), 1. / 2.) / 2.);
-    vec2 C3 = c_m(C1, vec2(-(1. / 2.), 0.) - c_pow(vec2(-3., 0.), 1. / 2.) / 2.);
-    vec2 v1 = C3 - c_d(p, 3. * C3);
-    vec2 v3 = C2 - c_d(p, 3. * C2);
+    float b2 = mag * mag;
+    vec2 q = vec2(b2 + b2, 0.);
+    vec2 p = vec2(-b2, 0.);
+    vec2 C = c_pow(vec2(q[0] * q[0], 0.) / 4. + vec2(p[0] * p[0] * p[0], 0.) / 27., 0.5);
+    vec2 C1 = c_pow(-q / 2. + C, 1. / 3.);
+    vec2 C2 = c_m(C1, vec2(-1., sqrt(3.)) / 2.);
+    vec2 C3 = c_m(C1, vec2(-1., -sqrt(3.)) / 2.);
+    vec2 v1 = C2 - c_d(p, 3. * C2);
+    vec2 v3 = C3 - c_d(p, 3. * C3);
     vec2 v4 = C1 - c_d(p, 3. * C1);
+
     rad_roots[0] = v1;
     rad_roots[1] = v3;
     rad_roots[2] = v4;
@@ -456,7 +463,7 @@ void main() {
     //latitude and longitude of origin
     vec2 origin = vec2(-hor_rot, vert_rot);
     //vec2 origin = vec2(0.0, -M_PI/2.0);
-    float fov = 0.45;
+    float fov = 0.95;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
     screencrd.x = -screencrd.x;
@@ -498,7 +505,8 @@ void main() {
     if(rs2 > 6.0 && enable_grav_lensing) {
         // + 2PI Because each n views the other side of the disk
         vec2 uv4 = rs2 * vec2(cos(phi + 2.0 * M_PI), sin(phi + 2.0 * M_PI)) / (3.0 * scale);
-        float theta2 = 10.0 * (1.0 + 1.0 / (pow(rs2, 3.0) + 2.0 * pow(rs2, 2.0))) * theta + rs2 / 10.0;
+        float rs_2 = rs2 * rs2;
+        float theta2 = (SPEED / (rs_2 * rs2)) * theta - hor_rot;
         uv4 = vec2(cos(theta2) * uv4.x + sin(theta2) * uv4.y, cos(theta2) * uv4.y - sin(theta2) * uv4.x) + vec2(0.5, 0.5);
 
         float rs2_square = rs2 * rs2;
@@ -519,7 +527,8 @@ void main() {
     if(rs1 > 6.0 && enable_grav_lensing) {
         // + PI Because each n views the other side of the disk
         vec2 uv3 = rs1 * vec2(cos(phi + M_PI), sin(phi + M_PI)) / (3.0 * scale);
-        float theta2 = 10.0 * (1.0 + 1.0 / (pow(rs1, 3.0) + 2.0 * pow(rs1, 2.0))) * theta + rs1 / 10.0;
+        float rs_2 = rs1 * rs1;
+        float theta2 = (SPEED / (rs_2 * rs1)) * theta - hor_rot;
         uv3 = vec2(cos(theta2) * uv3.x + sin(theta2) * uv3.y, cos(theta2) * uv3.y - sin(theta2) * uv3.x) + vec2(0.5, 0.5);
 
         float rs1_square = rs1 * rs1;
@@ -540,9 +549,9 @@ void main() {
     if(rs > 6.0) {
         vec2 uv2 = rs * vec2(cos(phi), sin(phi)) / (3.0 * scale);
         // The rs/10.0 is a hack to make the disk look more spirally
-        float rs2=rs*rs;
-        float theta2 = (1.0+5e2*(rs-2.0)/(rs2*rs2))*theta;//+1.0/(rs2);
-        uv2 = vec2(cos(theta2)*uv2.x + sin(theta2)*uv2.y, cos(theta2)*uv2.y - sin(theta2)*uv2.x)  + vec2(0.5, 0.5) ;
+        float rs_2 = rs * rs;
+        float theta2 = (SPEED / (rs_2 * rs)) * theta - hor_rot;
+        uv2 = vec2(cos(theta2) * uv2.x + sin(theta2) * uv2.y, cos(theta2) * uv2.y - sin(theta2) * uv2.x) + vec2(0.5, 0.5);
 
         float rs_square = rs * rs;
         float gu_tt1 = gu_tt(rs);
