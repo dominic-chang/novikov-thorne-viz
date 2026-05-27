@@ -1,41 +1,41 @@
-body {
+.app {
+  position: relative;
+  min-height: 100vh;
   background-color: black;
 }
 
-#root {
-  max-width: 1280px;
-  margin: 0 0 0 0;
-  padding: 0;
-  text-align: left;
+#canvas {
+  display: block;
+  margin: 0 auto;
 }
 
-label {
+.overlay label {
   font-size: 0.8rem;
   margin: 10% 1%;
   color: #ffba06;
-  position: relative; 
-  display: flex; 
+  position: relative;
+  display: flex;
   flex-direction: row;
 }
 
 .slider {
-  margin: 0% 1%;
-  display: block;
-  position: relative; 
-  min-width:5em;
-  flex-direction: row;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 5em;
+  margin: 0 1%;
 }
 
 .overlay {
-position: absolute; 
-width: 10em;
-top: 0; 
-left: 0; 
-right: 0; 
-bottom: 0; 
-display: flex; 
-flex-direction: column; 
-justify-content:center; 
-background: linear-gradient(to right, rgba(255,255,255,0.5), rgba(0,0,0,0.0)) 
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 10em;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.5),
+    rgba(0, 0, 0, 0)
+  );
 }
-

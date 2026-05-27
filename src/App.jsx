@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import Stats from "stats-js";
 import "./App.css";
 
-var renderer,
+let renderer,
   uniforms,
   vShader,
   video,
@@ -17,19 +17,19 @@ var renderer,
   geometry,
   texture1,
   texture2;
-var loader = new THREE.FileLoader();
-var cameraStream;
-var isCameraStarting = false;
+const loader = new THREE.FileLoader();
+let cameraStream;
+let isCameraStarting = false;
 
-var horRot = 0;
-var vertRot = -Math.PI / 15.0;
-var isdown = false;
-var lastX = 0;
-var lastY = 0;
-var thetao = new Date().getTime() / 10000;
+let horRot = 0;
+let vertRot = -Math.PI / 15.0;
+let isdown = false;
+let lastX = 0;
+let lastY = 0;
+const thetao = new Date().getTime() / 10000;
 
 stats = new Stats();
-stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
 function isUndefined(obj) {
@@ -76,12 +76,13 @@ function App() {
 
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth);
   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
-  const temperatureRef = useRef(temperature); // Used to terminate animation loop if temperature state has changed
+  const temperatureRef = useRef(temperature);
   const gradLensingRef = useRef(enableGravLensing);
   const dopplerBeamingRef = useRef(enableDopplerBeaming);
   const dopplerShiftRef = useRef(enableDopplerShift);
   const gravRedshiftRef = useRef(enableGravitationalRedshift);
   const backgroundRef = useRef(enableBackground);
+  const autoRotateRef = useRef(enableAutoRotate);
   const diskSizeRef = useRef(diskSize);
 
   useEffect(() => {
@@ -91,7 +92,7 @@ function App() {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  });
+  }, []);
 
   useEffect(() => {
     if (isUndefined(renderer)) {
@@ -173,7 +174,7 @@ function App() {
       scene = new THREE.Scene();
     }
 
-    var numFilesLeft = 2;
+    let numFilesLeft = 2;
 
     function runMoreIfDone() {
       --numFilesLeft;
@@ -201,8 +202,6 @@ function App() {
           );
           const preferredDevice = videoDevices[1] || videoDevices[0];
 
-          console.log(videoDevices);
-
           let stream = permissionStream;
           const activeDeviceId = permissionStream
             .getVideoTracks()[0]
@@ -218,7 +217,7 @@ function App() {
                 width: 2880,
                 height: 1440,
               },
-            }; //, facingMode: 'user' } };
+            };
 
             stopStream(permissionStream);
             stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -241,30 +240,6 @@ function App() {
       }
     }
     getCameraDevices();
-    // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    //   const constraints = {
-    //     video: {
-    //       deviceId: { exact: videodevices[1].deviceId },
-    //       width: 1280,
-    //       height: 720,
-    //       facingMode: "user",
-    //     },
-    //   };
-
-    //   navigator.mediaDevices
-    //     .getUserMedia(constraints)
-    //     .then(function (stream) {
-    //       // apply the stream to the video element used in the texture
-
-    //       video.srcObject = stream;
-    //       video.play();
-    //     })
-    //     .catch(function (error) {
-    //       console.error("Unable to access the camera/webcam.", error);
-    //     });
-    // } else {
-    //   console.error("MediaDevices interface not available.");
-    // }
 
     if (isUndefined(vShader) || isUndefined(fShader)) {
       loader.load("glsl/fragment.glsl", function (data) {
@@ -278,9 +253,6 @@ function App() {
     } else {
       more();
     }
-
-    console.log("App mounted");
-    //return () => {termination.current = true;}
   });
 
   function more() {
@@ -289,12 +261,9 @@ function App() {
     }
 
     if (isUndefined(texture2)) {
-      console.log("loading texture2");
-      //texture2 = new THREE.TextureLoader().load("images/image.png"); //.load('space.png')
       texture2 = new THREE.VideoTexture(video);
     }
     if (isUndefined(texture1)) {
-      console.log("loading texture1");
       texture1 = new THREE.TextureLoader().load("images/clouds-gray.jpeg");
     }
 
@@ -319,7 +288,6 @@ function App() {
     }
 
     if (isUndefined(shaderMaterial)) {
-      console.log("creating shaderMaterial");
       shaderMaterial = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: vShader,
@@ -339,8 +307,8 @@ function App() {
   }
   function animate() {
     stats.begin();
-    var d = new Date();
-    theta = thetao + (-d.getTime() / 10000) ;
+    const d = new Date();
+    theta = thetao + -d.getTime() / 10000;
     if (enableAutoRotate) {
       horRot += 0.001;
       horRot = horRot % (2.0 * Math.PI);
@@ -351,7 +319,7 @@ function App() {
     ) {
       theta += 0.01;
     }
-    accDisk.material.uniforms.theta.value = theta; // + 3.14 * (Math.abs(Math.sin(theta)))/2.;
+    accDisk.material.uniforms.theta.value = theta;
     accDisk.material.uniforms.hor_rot.value = horRot;
     accDisk.material.uniforms.vert_rot.value = vertRot;
     accDisk.material.uniforms.disk_temperature.value = temperature;
@@ -374,6 +342,7 @@ function App() {
       dopplerShiftRef.current === enableDopplerShift &&
       gravRedshiftRef.current === enableGravitationalRedshift &&
       backgroundRef.current === enableBackground &&
+      autoRotateRef.current === enableAutoRotate &&
       diskSizeRef.current === diskSize
     ) {
       requestAnimationFrame(animate);
@@ -381,127 +350,108 @@ function App() {
   }
 
   return (
-    <>
-      <div>
-        <div
-          style={{
-            position: "relative",
-            alignItems: "center",
-            backgroundColor: "black",
-          }}
-        >
-          <canvas
-            id="canvas"
-            style={{
-              marginLeft: "auto",
-              marginRight: "auto",
-              display: "block",
-              width: canvasWidth,
+    <div className="app">
+      <canvas
+        id="canvas"
+        style={{
+          width: canvasWidth,
+        }}
+      ></canvas>
+      <div className="overlay">
+        <label>
+          <input
+            type="checkbox"
+            checked={enableGravLensing}
+            onChange={(e) => {
+              setGravLensing(e.target.checked);
+              gradLensingRef.current = e.target.checked;
             }}
-          ></canvas>
-          <div className="overlay">
-            <div className="checkbox-buttons">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableGravLensing}
-                  onChange={(e) => {
-                    setGravLensing(e.target.checked);
-                    gradLensingRef.current = e.target.checked;
-                  }}
-                />
-                Gravitational Lensing
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableDopplerBeaming}
-                  onChange={(e) => {
-                    setDopplerBeaming(e.target.checked);
-                    dopplerBeamingRef.current = e.target.checked;
-                  }}
-                />
-                Doppler Beaming
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableDopplerShift}
-                  onChange={(e) => {
-                    setDopplerShift(e.target.checked);
-                    dopplerShiftRef.current = e.target.checked;
-                  }}
-                />
-                Doppler Shift
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableGravitationalRedshift}
-                  onChange={(e) => {
-                    setGravitationalRedshift(e.target.checked);
-                    gravRedshiftRef.current = e.target.checked;
-                  }}
-                />
-                Gravitational Redshift
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableBackground}
-                  onChange={(e) => {
-                    setBackground(e.target.checked);
-                    backgroundRef.current = e.target.checked;
-                  }}
-                />
-                Toggle Background
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enableAutoRotate}
-                  onChange={(e) => {
-                    setAutoRotate(e.target.checked);
-                    backgroundRef.current = e.target.checked;
-                  }}
-                />
-                Auto Rotate
-              </label>
-            </div>
-            <div className="slider">
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <input
-                  type="range"
-                  min="3500"
-                  max="1e4"
-                  value={temperature}
-                  onChange={(e) => {
-                    setTemperature(e.target.value);
-                    temperatureRef.current = e.target.value;
-                  }}
-                />
-                <label style={{}}>Temperature: {temperature}K</label>
-              </div>
-            </div>
-            <div className="slider">
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={diskSize}
-                  onChange={(e) => {
-                    setDiskSize(e.target.value);
-                    diskSizeRef.current = e.target.value;
-                  }}
-                />
-                <label style={{}}>Disk Size: {diskSize}</label>
-              </div>
-            </div>
-          </div>
+          />
+          Gravitational Lensing
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={enableDopplerBeaming}
+            onChange={(e) => {
+              setDopplerBeaming(e.target.checked);
+              dopplerBeamingRef.current = e.target.checked;
+            }}
+          />
+          Doppler Beaming
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={enableDopplerShift}
+            onChange={(e) => {
+              setDopplerShift(e.target.checked);
+              dopplerShiftRef.current = e.target.checked;
+            }}
+          />
+          Doppler Shift
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={enableGravitationalRedshift}
+            onChange={(e) => {
+              setGravitationalRedshift(e.target.checked);
+              gravRedshiftRef.current = e.target.checked;
+            }}
+          />
+          Gravitational Redshift
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={enableBackground}
+            onChange={(e) => {
+              setBackground(e.target.checked);
+              backgroundRef.current = e.target.checked;
+            }}
+          />
+          Toggle Background
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={enableAutoRotate}
+            onChange={(e) => {
+              setAutoRotate(e.target.checked);
+              autoRotateRef.current = e.target.checked;
+            }}
+          />
+          Auto Rotate
+        </label>
+        <div className="slider">
+          <input
+            type="range"
+            min="3500"
+            max="1e4"
+            value={temperature}
+            onChange={(e) => {
+              setTemperature(e.target.value);
+              temperatureRef.current = e.target.value;
+            }}
+          />
+          <label>Temperature: {temperature}K</label>
+        </div>
+        <div className="slider">
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={diskSize}
+            onChange={(e) => {
+              setDiskSize(e.target.value);
+              diskSizeRef.current = e.target.value;
+            }}
+          />
+          <label>Disk Size: {diskSize}</label>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

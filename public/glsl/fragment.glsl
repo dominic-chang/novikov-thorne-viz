@@ -352,9 +352,6 @@ float calculateYC(float T, float x_c) {
 
 vec3 xyzTorgb(float x, float y, float z) {/*https://en.wikipedia.org/wiki/CIE_1931_color_space*/
     vec3 c = vec3(0.0, 0.0, 0.0);
-  //c[0] = 0.41847*x  - 0.15866*y - 0.082835*z;
-  //c[1] = (-0.091169)*x  + 0.0025243*y + 0.015708*z;
-  //c[2] = 0.00092090*x - 0.0025498*y +0.17860*z;
     c[0] = 3.24066 * x - 1.53772 * y - 0.4986 * z;
     c[1] = -0.9689 * x + 1.8758 * y + 0.0415 * z;
     c[2] = 0.0557 * x - 0.2040 * y + 1.0570 * z;
@@ -459,10 +456,8 @@ void main() {
         rs = rs_flat(mag, psi);
     }
 
-    float rad_view_angle = vert_rot - 0.499 * M_PI;
     //latitude and longitude of origin
     vec2 origin = vec2(-hor_rot, vert_rot);
-    //vec2 origin = vec2(0.0, -M_PI/2.0);
     float fov = 0.95;
 
     vec2 screencrd = (gl_FragCoord.xy/uResolution.x - vec2(0.5 ,0.5*uResolution.y/uResolution.x))*vec2(M_PI, M_PI)*vec2(fov,fov);
